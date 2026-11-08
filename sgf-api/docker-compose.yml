@@ -1,0 +1,21 @@
+version: '3.4'
+services:
+  sgfapi:
+    image: sgf-api:latest
+    build:
+      context: sgf-api
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 3333
+      HOST: 127.0.0.1
+      APP_URL: http://${HOST}:${PORT}
+      LOG_LEVEL: info
+      APP_KEY: lInR6CyYGgs17bj61wUuQ1iMZCiAZzlI
+      DB_HOST: mysql-container-1
+      DB_PORT: 3306
+      DB_USER: sgfuser
+      DB_PASSWORD: sgf123
+      DB_DATABASE: sgf
+    ports:
+      - 3333:3333

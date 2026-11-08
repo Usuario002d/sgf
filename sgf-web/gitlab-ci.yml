@@ -1,0 +1,18 @@
+# .gitlab-ci.yml para React
+image: node:latest
+
+cache:
+  paths:
+    - node_modules/
+
+pages:
+  script:
+    - npm install
+    - npm run build
+    - cp -r build/ public/
+  artifacts:
+    paths:
+      - public
+  only:
+    - csagene_developer
+

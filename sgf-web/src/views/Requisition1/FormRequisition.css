@@ -1,0 +1,137 @@
+body {
+    color: black;
+  }
+  
+  header h3 {
+    font-weight: bold;
+    color: #343a40;
+  }
+  
+  .form-control,
+  .form-select {
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  
+  .table th, .table td {
+    vertical-align: middle;
+    text-align: center;
+  }
+  
+  .table-dark {
+    background-color: #212529;
+    color: #ffffff;
+  }
+  
+
+  /* Estilos gerais para as caixas */
+.box {
+    border: 2px solid black;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+  }
+  
+  /* Estilo da tabela */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  table th, table td {
+    border: 2px solid black;
+    padding: 8px;
+    text-align: center;
+  }
+  
+  /* Estilos para o formulário e inputs */
+  input, select, button {
+    border-radius: 4px;
+  }
+  
+  button {
+    border: none;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    opacity: 0.8;
+  }
+  
+  /* Ajustes na borda da tabela para o efeito de linha preta */
+  table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+  
+  table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  /* Estilo para a borda preta da tabela */
+  table td, table th {
+    border: 2px solid black;
+  }
+  
+  .box-container {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    margin-bottom: 20px;
+  }
+  
+  .box-container h5 {
+    margin-bottom: 15px;
+    font-weight: bold;
+  }
+  
+  .form-label {
+    font-weight: normal;
+  }
+  
+  .row {
+    margin-bottom: 10px;
+  }
+  
+  .text-center {
+    text-align: center;
+  }
+  
+
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 800px;
+    width: 90%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    position: relative;
+  }
+  
+  .close-modal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+   /* Estilo para a primeira coluna */
+.sticky-column {
+  position: -webkit-sticky;
+  position: sticky;
+  left: 0;
+  background-color: #fff;
+  z-index: 1;
+}

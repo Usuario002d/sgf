@@ -1,0 +1,18 @@
+/*Para remover fundo total da Tabela*/
+/*.transparent-table,*/
+/*.transparent-table thead,*/
+/*.transparent-table tbody,*/
+/*.transparent-table tr,*/
+/*.transparent-table th,*/
+/*.transparent-table td {*/
+   /* background-color: transparent !important;*/
+   /* border: 1px solid #ccc;*/
+   /* color: #000; /* opcional, pra garantir visibilidade do texto */
+/*}*/
+
+/*Para remover apenas o fundo do co*/
+.transparent-table tbody,
+.transparent-table tbody tr,
+.transparent-table tbody td {
+    background-color: transparent !important;
+}

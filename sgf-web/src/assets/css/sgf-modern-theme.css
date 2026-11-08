@@ -1,0 +1,876 @@
+/* ==========================================================================
+   SGF — Enterprise Financial Management System Design System
+   Institutional Mozambique Emblem Palette + High-Density Space Management
+   Soft Sage-Pearl Canvas, Pure White Surfaces, Forest Emerald & Warm Gold Accents
+   ========================================================================== */
+
+:root {
+  /* Soft non-garish canvas and surface tokens harmonizing with white & emblem */
+  --sgf-bg-canvas: #eef3f0;
+  --sgf-bg-surface: #ffffff;
+  --sgf-bg-subtle: #f4f7f5;
+  --sgf-bg-sage-tint: #ebf3ee;
+  --sgf-bg-gold-tint: #fef9ee;
+
+  --sgf-border: #d5e0da;
+  --sgf-border-strong: #b8c9bf;
+  --sgf-border-emerald: #a7d7be;
+  --sgf-border-gold: #f3d08a;
+
+  /* Typography tokens */
+  --sgf-text-primary: #0f2922;
+  --sgf-text-secondary: #2d443d;
+  --sgf-text-muted: #5c746b;
+
+  /* Institutional Emblem Colors (Forest Emerald, Warm Gold, Deep Slate) */
+  --sgf-primary: #0f5132;
+  --sgf-primary-hover: #0b3d25;
+  --sgf-primary-soft: #eaf5ef;
+
+  --sgf-gold: #b45309;
+  --sgf-gold-hover: #92400e;
+  --sgf-gold-soft: #fef3c7;
+
+  --sgf-accent: #134e4a;
+  --sgf-success: #059669;
+  --sgf-success-soft: #ecfdf5;
+  --sgf-warning: #d97706;
+  --sgf-warning-soft: #fffbeb;
+  --sgf-danger: #be123c;
+  --sgf-danger-soft: #fff1f2;
+
+  /* Compact Executive Radii & Multi-layered Deep Shadows */
+  --sgf-radius-sm: 7px;
+  --sgf-radius-md: 10px;
+  --sgf-radius-lg: 12px;
+  --sgf-radius-xl: 16px;
+
+  --sgf-shadow-xs: 0 1px 2px 0 rgba(15, 41, 34, 0.04);
+  --sgf-shadow-sm: 0 2px 5px -1px rgba(15, 41, 34, 0.06), 0 1px 2px -1px rgba(15, 41, 34, 0.03);
+  --sgf-shadow-md: 0 6px 16px -4px rgba(15, 41, 34, 0.08), 0 2px 6px -2px rgba(15, 41, 34, 0.04);
+  --sgf-shadow-lg: 0 14px 30px -6px rgba(15, 41, 34, 0.12), 0 5px 12px -4px rgba(15, 41, 34, 0.06);
+  --sgf-shadow-modal: 0 22px 45px -12px rgba(10, 31, 25, 0.28);
+}
+
+/* 1. Reset & Base Typography */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--sgf-bg-canvas) !important;
+  background-image: radial-gradient(at 0% 0%, rgba(15, 81, 50, 0.04) 0px, transparent 50%),
+                    radial-gradient(at 100% 0%, rgba(180, 83, 9, 0.035) 0px, transparent 50%) !important;
+  background-attachment: fixed !important;
+  color: var(--sgf-text-primary) !important;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-size: 13.5px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  zoom: 100% !important;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Plus Jakarta Sans", "Inter", sans-serif !important;
+  color: var(--sgf-text-primary);
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+a {
+  text-decoration: none !important;
+}
+
+/* Reclaim wasted horizontal space in legacy views that used width: 90% */
+div[style*="width: 90%"],
+div[style*="width:90%"] {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.container-fluid.py-2,
+.container-fluid.py-3,
+.container-fluid.py-4 {
+  padding-top: 0.25rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
+/* 2. Compact & Deep Card Architecture */
+.card,
+.sgf-card {
+  background-color: var(--sgf-bg-surface) !important;
+  border: 1px solid var(--sgf-border) !important;
+  border-radius: var(--sgf-radius-lg) !important;
+  box-shadow: var(--sgf-shadow-sm) !important;
+  margin-bottom: 0.85rem !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  overflow: hidden;
+}
+
+.card-header,
+.sgf-card-header {
+  background: linear-gradient(90deg, #f2f8f5 0%, #ffffff 70%, #fefaf2 100%) !important;
+  color: var(--sgf-text-primary) !important;
+  border-bottom: 1px solid var(--sgf-border) !important;
+  padding: 0.45rem 0.9rem !important;
+  min-height: 38px;
+  border-top-left-radius: var(--sgf-radius-lg) !important;
+  border-top-right-radius: var(--sgf-radius-lg) !important;
+  font-weight: 700 !important;
+  font-size: 0.84rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
+  gap: 0.65rem !important;
+}
+
+.card-header > div,
+.sgf-card-header > div {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap !important;
+  gap: 0.4rem !important;
+}
+
+.card-header input.form-control,
+.card-header input[type="text"],
+.card-header input[type="search"],
+.card-header input[type="date"],
+.sgf-inline-toolbar input.form-control,
+.sgf-inline-toolbar input[type="text"],
+.sgf-inline-toolbar input[type="date"] {
+  width: 205px !important;
+  max-width: 225px !important;
+  display: inline-block !important;
+  height: 29px !important;
+  min-height: 29px !important;
+  padding: 0.18rem 0.55rem !important;
+  font-size: 0.76rem !important;
+  margin: 0 !important;
+}
+
+.card-header select.form-select,
+.card-header select.form-control,
+.card-header select,
+.sgf-inline-toolbar select.form-select,
+.sgf-inline-toolbar select {
+  width: auto !important;
+  max-width: 210px !important;
+  display: inline-block !important;
+  height: 29px !important;
+  min-height: 29px !important;
+  padding: 0.16rem 1.6rem 0.16rem 0.5rem !important;
+  font-size: 0.76rem !important;
+  margin: 0 !important;
+}
+
+.card-header .btn,
+.card-header button,
+.sgf-inline-toolbar .btn,
+.sgf-inline-toolbar button {
+  height: 29px !important;
+  min-height: 29px !important;
+  padding: 0.18rem 0.62rem !important;
+  font-size: 0.74rem !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.3rem !important;
+}
+
+@media (max-width: 900px) {
+  .card-header,
+  .sgf-card-header,
+  .card-header > div {
+    flex-wrap: wrap !important;
+  }
+}
+
+.card-header h1,
+.card-header h2,
+.card-header h3,
+.card-header h4,
+.card-header h5,
+.card-header h6,
+.card-header .card-title {
+  color: var(--sgf-text-primary) !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+  line-height: 1.3 !important;
+}
+
+.card-body {
+  padding: 0.9rem 1.1rem !important;
+  color: var(--sgf-text-secondary);
+}
+
+.card-body.p-0 {
+  padding: 0 !important;
+}
+
+.card-footer {
+  background-color: var(--sgf-bg-subtle) !important;
+  border-top: 1px solid var(--sgf-border) !important;
+  padding: 0.65rem 1.05rem !important;
+  border-bottom-left-radius: var(--sgf-radius-lg) !important;
+  border-bottom-right-radius: var(--sgf-radius-lg) !important;
+}
+
+/* 3. High-Density Financial & Hierarchical Tables */
+table,
+.table {
+  width: 100%;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  margin-bottom: 0;
+  font-size: 0.8rem !important;
+  color: var(--sgf-text-secondary) !important;
+  background-color: var(--sgf-bg-surface);
+  border: 1px solid var(--sgf-border) !important;
+  border-radius: var(--sgf-radius-md);
+  overflow: hidden;
+}
+
+table thead th,
+.table thead th,
+.table-dark th,
+th {
+  background: linear-gradient(180deg, #e5f0ea 0%, #dae8e0 100%) !important;
+  color: #0b3622 !important;
+  font-weight: 700 !important;
+  font-size: 0.69rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  padding: 0.44rem 0.62rem !important;
+  line-height: 1.25 !important;
+  border-bottom: 2px solid #86a897 !important;
+  border-top: 1px solid #b8c9bf !important;
+  border-left: none !important;
+  border-right: 1px solid #b8c9bf !important;
+  vertical-align: middle !important;
+  white-space: nowrap;
+}
+
+table thead th:last-child,
+.table thead th:last-child {
+  border-right: none !important;
+}
+
+table tbody td,
+.table tbody td,
+td {
+  padding: 0.36rem 0.62rem !important;
+  font-size: 0.79rem !important;
+  line-height: 1.32 !important;
+  color: var(--sgf-text-primary) !important;
+  border-bottom: 1px solid #b5c8bd !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: 1px solid #d1dfd7 !important;
+  vertical-align: middle !important;
+  font-weight: 450;
+  background-color: transparent;
+  word-break: break-word;
+}
+
+table tbody td:last-child,
+.table tbody td:last-child {
+  border-right: none !important;
+}
+
+table.table {
+  border: 1px solid #b8c9bf !important;
+  margin-bottom: 0 !important;
+}
+
+/* Compact buttons & badges inside tables to preserve row density */
+table tbody td .btn,
+.table tbody td .btn,
+table tbody td button:not(.btn-close) {
+  padding: 0.22rem 0.55rem !important;
+  font-size: 0.73rem !important;
+  min-height: 26px !important;
+  border-radius: 6px !important;
+}
+
+table tbody td .badge,
+.table tbody td .badge {
+  padding: 0.24em 0.58em !important;
+  font-size: 0.69rem !important;
+}
+
+table tbody tr,
+.table tbody tr {
+  transition: background-color 0.12s ease !important;
+  background-color: #ffffff !important;
+}
+
+table tbody tr:nth-child(even):not(.active):not(.table-active):not(.table-success):not(.sgf-row-parent),
+.table-striped tbody tr:nth-of-type(odd):not(.table-success):not(.sgf-row-parent) {
+  background-color: #f9fbfa !important;
+}
+
+/* Parent / Aggregator Account Rows in Plano de Contas & Orçamento */
+table tbody tr.table-success,
+.table tbody tr.table-success,
+table tbody tr.sgf-row-parent,
+.table tbody tr.sgf-row-parent {
+  background: linear-gradient(90deg, #e9f5ee 0%, #f3f9f5 100%) !important;
+  font-weight: 700 !important;
+}
+
+table tbody tr.table-success td,
+.table tbody tr.table-success td,
+table tbody tr.sgf-row-parent td,
+.table tbody tr.sgf-row-parent td {
+  color: #0b3d25 !important;
+  font-weight: 700 !important;
+  border-bottom: 1px solid #cfe3d8 !important;
+  background-color: transparent !important;
+}
+
+table tbody tr:hover,
+.table-hover tbody tr:hover {
+  background-color: #e4f1ea !important;
+  color: var(--sgf-text-primary) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+table tbody tr:hover td,
+.table-hover tbody tr:hover td {
+  color: #0a2e1f !important;
+  background-color: transparent !important;
+}
+
+table tbody tr.active,
+table tbody tr.table-active,
+.table-hover tbody tr.table-active {
+  background-color: #fef3c7 !important;
+  color: #92400e !important;
+}
+
+table tbody tr.active td,
+table tbody tr.table-active td {
+  color: #92400e !important;
+  font-weight: 600 !important;
+  background-color: #fef3c7 !important;
+}
+
+/* Transparent compact tables inside Dashboard cards */
+table.transparent-table {
+  border: 1px solid var(--sgf-border) !important;
+  border-radius: var(--sgf-radius-md) !important;
+  width: 100% !important;
+}
+
+table.transparent-table thead th {
+  background: #edf4f0 !important;
+  color: #0f3d28 !important;
+  padding: 0.42rem 0.65rem !important;
+  font-size: 0.69rem !important;
+}
+
+table.transparent-table tbody td {
+  padding: 0.38rem 0.65rem !important;
+  font-size: 0.78rem !important;
+  border-bottom: 1px solid #ebf1ed !important;
+}
+
+/* Description cells & text wrapping helpers (prevents cut-off descriptions) */
+.sgf-desc-cell,
+.sgf-wrap-text {
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  line-height: 1.35 !important;
+}
+
+.sgf-field-preview {
+  margin-top: 4px;
+  padding: 5px 9px;
+  background-color: #f4f8f5;
+  border: 1px solid #d5e0da;
+  border-left: 3px solid #0f5132;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  color: #1e293b;
+  line-height: 1.35;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* 4. Compact Modern Form Controls & Labels */
+label,
+.form-label {
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  color: var(--sgf-text-secondary) !important;
+  margin-bottom: 0.25rem !important;
+  letter-spacing: -0.005em;
+}
+
+.form-control,
+.form-select,
+select.form-control,
+input.form-control,
+textarea.form-control {
+  background-color: #ffffff !important;
+  border: 1px solid #bfd0c6 !important;
+  border-radius: var(--sgf-radius-sm) !important;
+  padding: 0.4rem 0.68rem !important;
+  font-size: 0.83rem !important;
+  color: var(--sgf-text-primary) !important;
+  min-height: 35px;
+  box-shadow: var(--sgf-shadow-xs) !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+  text-overflow: ellipsis;
+}
+
+textarea.form-control {
+  white-space: normal !important;
+  word-break: break-word !important;
+  line-height: 1.4 !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--sgf-primary) !important;
+  box-shadow: 0 0 0 3px rgba(15, 81, 50, 0.14) !important;
+  outline: none !important;
+}
+
+.form-control:disabled,
+.form-control[readonly],
+.disabled-input {
+  background-color: #edf3f0 !important;
+  color: #334e45 !important;
+  border-color: #d5e0da !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+
+/* 5. Enterprise Buttons */
+button,
+.btn {
+  font-family: "Inter", sans-serif !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  border-radius: var(--sgf-radius-sm) !important;
+  padding: 0.42rem 0.9rem !important;
+  letter-spacing: -0.005em;
+  transition: all 0.15s ease !important;
+  transform: none !important;
+  box-shadow: var(--sgf-shadow-xs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.btn-sm {
+  padding: 0.28rem 0.65rem !important;
+  font-size: 0.75rem !important;
+}
+
+button:hover,
+.btn:hover {
+  transform: translateY(-1px) !important;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #0f5132 0%, #156d45 100%) !important;
+  border: 1px solid #0f5132 !important;
+  color: #ffffff !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: linear-gradient(135deg, #0b3d25 0%, #0f5132 100%) !important;
+  border-color: #0b3d25 !important;
+  color: #ffffff !important;
+}
+
+.btn-success,
+.btn-view-entries {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  border: 1px solid #047857 !important;
+  color: #ffffff !important;
+}
+
+.btn-success:hover,
+.btn-view-entries:hover {
+  background: linear-gradient(135deg, #047857 0%, #065f46 100%) !important;
+  border-color: #065f46 !important;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #be123c 0%, #9f1239 100%) !important;
+  border: 1px solid #9f1239 !important;
+  color: #ffffff !important;
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important;
+  border: 1px solid #b45309 !important;
+  color: #ffffff !important;
+}
+
+.btn-secondary {
+  background-color: #ffffff !important;
+  border: 1px solid #bfd0c6 !important;
+  color: var(--sgf-text-secondary) !important;
+}
+
+.btn-secondary:hover {
+  background-color: #f2f7f4 !important;
+  color: var(--sgf-text-primary) !important;
+}
+
+.btn-info {
+  background: linear-gradient(135deg, #0f766e 0%, #115e59 100%) !important;
+  border: 1px solid #115e59 !important;
+  color: #ffffff !important;
+}
+
+/* 6. Deep Bootstrap & Custom Modal Architecture */
+.modal-backdrop.show {
+  opacity: 0.55 !important;
+  background-color: #071914 !important;
+}
+
+.modal-content {
+  background-color: #ffffff !important;
+  border: 1px solid var(--sgf-border) !important;
+  border-radius: var(--sgf-radius-xl) !important;
+  box-shadow: var(--sgf-shadow-modal) !important;
+  overflow: hidden;
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #eff7f3 0%, #ffffff 60%, #fef9ec 100%) !important;
+  border-bottom: 1px solid var(--sgf-border) !important;
+  padding: 0.8rem 1.25rem !important;
+  color: var(--sgf-text-primary) !important;
+}
+
+.modal-header .modal-title,
+.modal-header h5,
+.modal-header h4 {
+  color: var(--sgf-text-primary) !important;
+  font-weight: 800 !important;
+  font-size: 0.98rem !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.modal-body {
+  background-color: #ffffff !important;
+  padding: 1rem 1.25rem !important;
+  color: var(--sgf-text-secondary) !important;
+}
+
+.modal-footer {
+  background-color: #f4f8f5 !important;
+  border-top: 1px solid var(--sgf-border) !important;
+  padding: 0.7rem 1.25rem !important;
+}
+
+/* Ensure all table cells inside modals wrap descriptions cleanly without clipping */
+.modal-body table tbody td {
+  white-space: normal !important;
+  word-break: break-word !important;
+}
+
+/* 7. Sleek Compact Executive Page Headers & Banner Cards */
+.header-wrapper,
+.sgf-page-header {
+  background: linear-gradient(135deg, #ffffff 0%, #f1f8f4 65%, #fdf8ec 100%) !important;
+  border: 1px solid var(--sgf-border) !important;
+  border-left: 4px solid var(--sgf-primary) !important;
+  border-radius: var(--sgf-radius-md) !important;
+  box-shadow: var(--sgf-shadow-xs) !important;
+  padding: 0.6rem 1.1rem !important;
+  margin-bottom: 0.75rem !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Transform tall centered legacy .header-wrapper banners into a compact horizontal bar */
+.header-wrapper .header-content,
+.header-wrapper > .container,
+.header-wrapper > div {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 0.4rem 1rem !important;
+  text-align: left !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: 100% !important;
+}
+
+.header-wrapper .header-divider {
+  display: none !important;
+}
+
+.header-wrapper h2,
+.header-wrapper h2 span,
+.header-wrapper h4,
+.header-wrapper h4 span,
+.header-wrapper h6,
+.sgf-page-header h2 {
+  background: none !important;
+  -webkit-text-fill-color: var(--sgf-text-primary) !important;
+  color: var(--sgf-text-primary) !important;
+  text-shadow: none !important;
+  font-weight: 800 !important;
+  font-size: 1.12rem !important;
+  line-height: 1.25 !important;
+  margin: 0 !important;
+}
+
+.header-wrapper p,
+.header-wrapper .header-subtitle,
+.sgf-page-header p {
+  font-size: 0.77rem !important;
+  line-height: 1.3 !important;
+  color: var(--sgf-text-muted) !important;
+  margin: 0 !important;
+}
+
+/* 8. Action Cards (Hoverable Cards in BudgetChange, AssociatAccounts, etc.) */
+.hover-effect-card,
+.card-hoverable {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbf9 100%) !important;
+  border: 1px solid var(--sgf-border) !important;
+  border-radius: var(--sgf-radius-lg) !important;
+  box-shadow: var(--sgf-shadow-sm) !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
+}
+
+.hover-effect-card:hover,
+.card-hoverable:hover {
+  transform: translateY(-2px) !important;
+  border-color: #86efac !important;
+  box-shadow: var(--sgf-shadow-md) !important;
+}
+
+.hover-effect-card .card-title,
+.hover-effect-card .h5 {
+  color: var(--sgf-text-primary) !important;
+  text-shadow: none !important;
+  font-weight: 700 !important;
+  font-size: 0.98rem !important;
+}
+
+.hover-effect-card .card-text {
+  color: var(--sgf-text-muted) !important;
+  font-size: 0.78rem !important;
+}
+
+/* 9. Legacy Box Containers Cleanup */
+.box,
+.box-container {
+  background-color: #ffffff !important;
+  border: 1px solid var(--sgf-border) !important;
+  border-radius: var(--sgf-radius-lg) !important;
+  box-shadow: var(--sgf-shadow-sm) !important;
+  padding: 0.9rem 1.1rem !important;
+  margin-bottom: 0.85rem !important;
+}
+
+/* 10. Badges & Status Pills */
+.badge {
+  font-weight: 600 !important;
+  font-size: 0.7rem !important;
+  padding: 0.3em 0.65em !important;
+  border-radius: 9999px !important;
+  letter-spacing: 0.02em;
+}
+
+/* 11. Responsive Utilities, No Vertical Table Scrollbars & DataTable Pagination */
+.table-responsive {
+  border-radius: var(--sgf-radius-md);
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  max-height: none !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+tr.sgf-paginated-hidden {
+  display: none !important;
+}
+
+@media print {
+  tr.sgf-paginated-hidden {
+    display: table-row !important;
+  }
+  .sgf-datatable-pagination,
+  .sgf-fixed-footer {
+    display: none !important;
+  }
+}
+
+.sgf-datatable-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding: 6px 12px;
+  background: linear-gradient(180deg, #f4f9f6 0%, #ebf2ee 100%);
+  border: 1px solid #b8c9bf;
+  border-top: none;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  font-size: 0.75rem;
+  color: #2c4c3c;
+}
+
+.sgf-dt-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.sgf-dt-info strong {
+  color: #0b2e1f;
+  font-weight: 700;
+}
+
+.sgf-dt-divider {
+  color: #b5c8bd;
+}
+
+.sgf-dt-size-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 !important;
+  font-size: 0.74rem !important;
+  font-weight: 600 !important;
+  color: #2c4c3c !important;
+}
+
+.sgf-dt-size-select {
+  height: 24px !important;
+  padding: 1px 6px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  color: #0f5132 !important;
+  background-color: #ffffff !important;
+  border: 1px solid #9ab5a7 !important;
+  border-radius: 5px !important;
+  cursor: pointer;
+}
+
+.sgf-dt-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.sgf-dt-btn {
+  min-width: 26px;
+  height: 24px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #0f3d28;
+  background-color: #ffffff;
+  border: 1px solid #abc2b5;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.14s ease;
+  line-height: 1;
+}
+
+.sgf-dt-btn:hover:not(:disabled):not(.active) {
+  background-color: #e2efe8;
+  border-color: #0f5132;
+  color: #0a291b;
+}
+
+.sgf-dt-btn.active {
+  background: linear-gradient(135deg, #0f5132 0%, #0a3622 100%);
+  border-color: #0a3622;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 81, 50, 0.25);
+}
+
+.sgf-dt-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background-color: #f1f5f3;
+}
+
+/* Unified Compact Table Header Toolbar (Search + Filters + Exports in 1 line) */
+.sgf-table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  width: 100%;
+}
+
+.sgf-toolbar-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+@media (max-width: 959px) {
+  .sgf-fixed-footer {
+    left: 0 !important;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #e9f0ec;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #adc2b6;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0f5132;
+}
+
+@media (max-width: 768px) {
+  .card-body {
+    padding: 0.75rem !important;
+  }
+  table thead th,
+  table tbody td {
+    padding: 0.35rem 0.5rem !important;
+    font-size: 0.74rem !important;
+  }
+}

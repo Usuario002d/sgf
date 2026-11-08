@@ -1,0 +1,12 @@
+.modal-premium .modal-dialog {
+    max-width: 98vw !important; /* Quase 100% da largura da tela */
+    width: 98vw !important;
+    margin: auto;
+}
+
+.modal-premium .modal-content {
+    width: 100%;
+    max-height: 95vh;
+    overflow-y: auto;
+    border-radius: 8px;
+}

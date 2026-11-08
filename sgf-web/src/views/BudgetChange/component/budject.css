@@ -1,0 +1,9 @@
+/* Neutralized legacy overrides — managed by sgf-modern-theme.css */
+.card-premium {
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.card-premium:hover {
+  transform: translateY(-4px);
+}

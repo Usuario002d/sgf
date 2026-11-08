@@ -1,0 +1,17 @@
+/* Neutralized legacy overrides — managed by sgf-modern-theme.css */
+.text {
+  color: #0f2922;
+}
+
+.sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.sticky-bottom {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background-color: #ffffff;
+}

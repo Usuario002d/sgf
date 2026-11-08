@@ -1,0 +1,8 @@
+/* styles.css */
+.header {
+    background-color: #003366; /* Azul escuro */
+    color: white; /* Cor do texto em branco para contraste */
+    padding: 10px; /* Espaciamento interno */
+    text-align: center; /* Centraliza o texto */
+  }
+  

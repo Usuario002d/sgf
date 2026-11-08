@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apresentação: Integração SIB / E-INAS - Endpoints de Importação</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      .slide-page { page-break-after: always; display: block !important; margin-bottom: 2rem; }
+      body { background: white !important; color: black !important; }
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(156, 163, 175, 0.4);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen antialiased flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+
+  <!-- Header / Navigation Bar -->
+  <header class="no-print sticky top-0 z-50 bg-slate-900/90 backdrop-blur border-b border-slate-800 px-4 py-3 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+    <div class="flex items-center gap-3">
+      <div class="h-9 w-9 rounded-lg bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center font-bold text-white shadow-md text-sm">
+        SIB
+      </div>
+      <div>
+        <h1 class="text-sm font-bold tracking-tight text-white flex items-center gap-2">
+          Integração SIB &harr; E-INAS
+          <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-mono">v1.0 UAT</span>
+        </h1>
+        <p class="text-xs text-slate-400">Guia Prático e Comparativo dos Serviços de Importação</p>
+      </div>
+    </div>
+
+    <!-- Mode Selector & Controls -->
+    <div class="flex items-center gap-2">
+      <div class="bg-slate-800 p-1 rounded-lg border border-slate-700 flex text-xs">
+        <button id="btn-mode-slides" onclick="setMode('slides')" class="px-3 py-1.5 rounded-md font-medium transition-all bg-blue-600 text-white shadow-sm flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+          Modo Slides
+        </button>
+        <button id="btn-mode-doc" onclick="setMode('doc')" class="px-3 py-1.5 rounded-md font-medium transition-all text-slate-300 hover:text-white flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Manual Completo
+        </button>
+        <button id="btn-mode-sim" onclick="setMode('sim')" class="px-3 py-1.5 rounded-md font-medium transition-all text-slate-300 hover:text-white flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Simulador
+        </button>
+      </div>
+
+      <button onclick="window.print()" title="Imprimir ou Salvar como PDF" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg border border-slate-700 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="no-print fixed bottom-6 right-6 z-50 bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-2xl opacity-0 transition-opacity pointer-events-none flex items-center gap-2">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+    <span>Copiado para a área de transferência!</span>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+    <!-- ==================== VIEW 1: SLIDES PRESENTATION MODE ==================== -->
+    <div id="view-slides" class="space-y-6">
+      
+      <!-- Slide Navigation Bar -->
+      <div class="no-print flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl px-5 py-3 shadow">
+        <div class="flex items-center gap-2 text-xs text-slate-400">
+          <span>Slide</span>
+          <span id="slide-indicator" class="font-bold text-blue-400 text-base">1</span>
+          <span>de</span>
+          <span id="slide-total" class="font-bold text-slate-300">7</span>
+          <span class="hidden sm:inline text-slate-600">|</span>
+          <span id="slide-title-preview" class="hidden sm:inline font-medium text-slate-200 truncate max-w-xs">Visão Geral & Arquitectura</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="prevSlide()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1 border border-slate-700">
+            &larr; Anterior
+          </button>
+          <button onclick="nextSlide()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1 shadow-sm">
+            Próximo &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- SLIDE 1: CAPA & VISÃO GERAL -->
+      <div class="slide-item bg-slate-900 border border-slate-800 rounded-2xl p-8 lg:p-12 shadow-2xl relative overflow-hidden" data-title="Capa & Introdução">
+        <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="max-w-3xl space-y-6">
+          <div class="inline-flex items-center gap-2 bg-blue-900/30 border border-blue-500/30 text-blue-300 text-xs px-3 py-1 rounded-full font-semibold">
+            Manual de Integração de Sistemas
+          </div>
+          <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
+            Integração SIB &harr; E-INAS
+          </h2>
+          <p class="text-lg text-slate-300 font-light leading-relaxed">
+            Guia Prático e Comparativo dos Serviços de Interoperabilidade: <code class="text-blue-400 bg-slate-800 px-2 py-0.5 rounded">sync</code>, <code class="text-emerald-400 bg-slate-800 px-2 py-0.5 rounded">importVerificationRecords</code> e <code class="text-purple-400 bg-slate-800 px-2 py-0.5 rounded">importBeneficiaries</code>.
+          </p>
+
+          <div class="pt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-800">
+            <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700/50">
+              <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Ambiente UAT</span>
+              <p class="text-sm font-mono text-cyan-400 mt-1 truncate">sgb-uat.rsig.gov.mz</p>
+            </div>
+            <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700/50">
+              <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Autenticação</span>
+              <p class="text-sm font-semibold text-slate-200 mt-1">HTTP Basic Auth</p>
+            </div>
+            <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700/50">
+              <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Formato Payload</span>
+              <p class="text-sm font-semibold text-slate-200 mt-1">JSON UTF-8 (Batch / JMS)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 2: TABELA COMPARATIVA -->
+      <div class="slide-item hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:p-8 shadow-2xl space-y-6" data-title="Resumo Comparativo dos 3 Endpoints">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+          <div>
+            <h3 class="text-2xl font-bold text-white">Resumo Comparativo: Qual endpoint utilizar?</h3>
+            <p class="text-xs text-slate-400">Diferenças fundamentais entre objectivo, volume de dados, ficha social e ciclo de vida.</p>
+          </div>
+          <span class="bg-slate-800 text-slate-300 text-xs px-2.5 py-1 rounded font-mono">Tabela Resumo</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-slate-700 bg-slate-800/60 text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                <th class="p-3">Critério</th>
+                <th class="p-3 text-blue-400">/sync</th>
+                <th class="p-3 text-emerald-400">/importVerificationRecords</th>
+                <th class="p-3 text-purple-400">/importBeneficiaries</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800 text-xs sm:text-sm">
+              <tr class="hover:bg-slate-800/30">
+                <td class="p-3 font-semibold text-slate-200">Objectivo Principal</td>
+                <td class="p-3 text-slate-300">Importação rápida com dados essenciais de pagamento.</td>
+                <td class="p-3 text-slate-300">Registo do inquérito socioeconómico completo da família.</td>
+                <td class="p-3 text-slate-300">Inquérito completo <strong>E</strong> inscrição como beneficiário activo.</td>
+              </tr>
+              <tr class="hover:bg-slate-800/30">
+                <td class="p-3 font-semibold text-slate-200">Volume de Dados</td>
+                <td class="p-3"><span class="bg-blue-900/40 text-blue-300 border border-blue-700/50 px-2 py-0.5 rounded text-xs">Leve / Simplificado</span> (13 campos)</td>
+                <td class="p-3"><span class="bg-emerald-900/40 text-emerald-300 border border-emerald-700/50 px-2 py-0.5 rounded text-xs">Completo / Detalhado</span> (Habitação + Bens)</td>
+                <td class="p-3"><span class="bg-purple-900/40 text-purple-300 border border-purple-700/50 px-2 py-0.5 rounded text-xs">Completo + Programa</span> (Ficha + PSP + Conta)</td>
+              </tr>
+              <tr class="hover:bg-slate-800/30">
+                <td class="p-3 font-semibold text-slate-200">Regista Ficha Social?</td>
+                <td class="p-3 text-rose-400 font-semibold">&cross; Não (só cria beneficiário)</td>
+                <td class="p-3 text-emerald-400 font-semibold">&check; Sim (Ficha com indicadores)</td>
+                <td class="p-3 text-emerald-400 font-semibold">&check; Sim (Ficha com indicadores)</td>
+              </tr>
+              <tr class="hover:bg-slate-800/30">
+                <td class="p-3 font-semibold text-slate-200">Cria Beneficiário Activo?</td>
+                <td class="p-3 text-emerald-400 font-semibold">&check; Sim (Pronto para receber)</td>
+                <td class="p-3 text-rose-400 font-semibold">&cross; Não (apenas agregado registado)</td>
+                <td class="p-3 text-emerald-400 font-semibold">&check; Sim (Entra na folha activa)</td>
+              </tr>
+              <tr class="hover:bg-slate-800/30">
+                <td class="p-3 font-semibold text-slate-200">Tipo de Processamento</td>
+                <td class="p-3 font-mono text-xs text-cyan-300">Síncrono em lote (Batch)</td>
+                <td class="p-3 font-mono text-xs text-amber-300">Assíncrono em fila (JMS + Staging)</td>
+                <td class="p-3 font-mono text-xs text-amber-300">Assíncrono em fila (JMS + Staging)</td>
+              </tr>
+              <tr class="hover:bg-slate-800/30">
+                <td class="p-3 font-semibold text-slate-200">Cenário Típico de Uso</td>
+                <td class="p-3 text-slate-300">Migrações rápidas, listas pré-existentes, emergências.</td>
+                <td class="p-3 text-slate-300">Censo e diagnóstico de campo (famílias ainda não aprovadas).</td>
+                <td class="p-3 text-slate-300">Admissão oficial e expansão directa de programas (ex: PSSB).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SLIDE 3: AUTENTICAÇÃO E CONFIGURAÇÃO BASE -->
+      <div class="slide-item hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:p-8 shadow-2xl space-y-6" data-title="Autenticação e Configuração Base">
+        <div class="border-b border-slate-800 pb-4">
+          <h3 class="text-2xl font-bold text-white">Autenticação e Configuração Base</h3>
+          <p class="text-xs text-slate-400">Parâmetros de conectividade universais para todos os serviços em UAT.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-slate-800/50 p-5 rounded-xl border border-slate-700 space-y-4">
+            <h4 class="font-semibold text-white text-sm flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Parâmetros Globais
+            </h4>
+            <div class="space-y-3 text-xs sm:text-sm">
+              <div>
+                <span class="text-slate-400 block text-xs">URL Base (Ambiente UAT):</span>
+                <code class="text-cyan-400 font-mono bg-slate-900 px-2 py-1 rounded block mt-0.5">https://sgb-uat.rsig.gov.mz/services/api/v1.0</code>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-xs">Utilizador:</span>
+                <code class="text-slate-200 font-mono bg-slate-900 px-2 py-1 rounded block mt-0.5">sib_integrator</code>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-xs">Password:</span>
+                <code class="text-slate-200 font-mono bg-slate-900 px-2 py-1 rounded block mt-0.5">sib_einas_2026</code>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-slate-800/50 p-5 rounded-xl border border-slate-700 space-y-4">
+            <h4 class="font-semibold text-white text-sm flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-blue-400"></span> Headers Obrigatórios
+            </h4>
+            <div class="space-y-3 font-mono text-xs">
+              <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                <span class="text-slate-500">Authorization:</span><br>
+                <span class="text-amber-300">Basic c2liX2ludGVncmF0b3I6c2liX2VpbmFzXzIwMjY=</span>
+              </div>
+              <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                <span class="text-slate-500">Content-Type:</span><br>
+                <span class="text-emerald-400">application/json</span>
+              </div>
+            </div>
+            <p class="text-xs text-slate-400">
+              O cabeçalho <code class="text-slate-200">Authorization</code> codifica o par <code class="text-slate-300">sib_integrator:sib_einas_2026</code> em Base64.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 4: ENDPOINT 1 - /sync -->
+      <div class="slide-item hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:p-8 shadow-2xl space-y-6" data-title="Endpoint: /sync (Dados Simplificados)">
+        <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-4 gap-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="bg-blue-600 text-white font-bold text-xs px-2 py-0.5 rounded font-mono">POST</span>
+              <h3 class="text-xl sm:text-2xl font-bold text-white font-mono">/services/api/v1.0/sync</h3>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">Para registo rápido ou sincronização de listas de beneficiários elegíveis.</p>
+          </div>
+          <button onclick="copyToClipboard('curl-sync')" class="no-print text-xs bg-slate-800 hover:bg-slate-700 text-blue-300 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            Copiar cURL
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="space-y-4">
+            <div class="bg-blue-950/40 border border-blue-800/40 p-4 rounded-xl text-xs space-y-2 text-blue-200">
+              <p class="font-bold text-blue-100 flex items-center gap-2">
+                <span>&#128161;</span> Regras-Chave do Payload (13 Campos)
+              </p>
+              <ul class="list-disc list-inside space-y-1 text-slate-300">
+                <li><strong>householdCode:</strong> Código único de AF existente no sistema.</li>
+                <li><strong>neighborhoodOrVillageCode:</strong> Código válido em <code>TERRITORIAL_CLASSIFIER</code>.</li>
+                <li><strong>Pagamento em Numerário:</strong> Mantenha <code>paymentServiceProviderNuit: ""</code> e <code>accountNumber: ""</code> (não remova as chaves!).</li>
+                <li><strong>Pagamento Electrónico:</strong> Se preencher um, é obrigatório preencher ambos.</li>
+              </ul>
+            </div>
+
+            <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700/60">
+              <span class="text-xs font-semibold uppercase text-slate-400 tracking-wider">Processamento</span>
+              <p class="text-sm font-semibold text-emerald-400 mt-1">Síncrono (Batch)</p>
+              <p class="text-xs text-slate-400 mt-1">Retorna imediatamente a confirmação ou rejeição em bloco.</p>
+            </div>
+          </div>
+
+          <!-- Code Box -->
+          <div class="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden text-xs">
+            <div class="bg-slate-900 px-3 py-1.5 border-b border-slate-800 flex justify-between items-center text-slate-400 font-mono text-[11px]">
+              <span>Exemplo Payload JSON</span>
+              <span class="text-blue-400">POST /sync</span>
+            </div>
+            <pre id="curl-sync" class="p-3 text-slate-300 font-mono overflow-x-auto max-h-72 custom-scrollbar text-[12px] leading-relaxed"><code>{
+  "organicClassifierCode": "62L000241",
+  "socialProgramCode": "PSSB",
+  "beneficiaries": [
+    {
+      "householdCode": "0301AF0000001",
+      "name": "João",
+      "lastName": "Muchanga",
+      "birthDate": "1980-05-20",
+      "gender": "M",
+      "memberNumber": 4,
+      "neighborhoodOrVillageCode": "03010101V01",
+      "targetGroupCode": "020",
+      "accountNumber": "841234567",
+      "paymentServiceProviderNuit": "400123456"
+    }
+  ]
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 5: ENDPOINT 2 - /importVerificationRecords -->
+      <div class="slide-item hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:p-8 shadow-2xl space-y-6" data-title="Endpoint: /importVerificationRecords (Ficha Completa)">
+        <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-4 gap-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="bg-emerald-600 text-white font-bold text-xs px-2 py-0.5 rounded font-mono">POST</span>
+              <h3 class="text-xl sm:text-2xl font-bold text-white font-mono">/services/api/v1.0/importVerificationRecords</h3>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">Inquérito socioeconómico completo (Diagnóstico de campo / Famílias ainda não activas).</p>
+          </div>
+          <button onclick="copyToClipboard('curl-verification')" class="no-print text-xs bg-slate-800 hover:bg-slate-700 text-emerald-300 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            Copiar cURL
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="space-y-4">
+            <div class="bg-emerald-950/30 border border-emerald-800/40 p-4 rounded-xl text-xs space-y-2 text-emerald-200">
+              <p class="font-bold text-emerald-100">Estrutura Multidimensional do Inquérito:</p>
+              <ul class="list-disc list-inside space-y-1 text-slate-300">
+                <li><strong class="text-emerald-300">habitation:</strong> Parede, tecto, piso, água, latrina, luz e divisões.</li>
+                <li><strong class="text-emerald-300">householdProperties:</strong> Inventário de bens duráveis e gado.</li>
+                <li><strong class="text-emerald-300">members:</strong> Relação de todos os residentes (membro 1 deve ter <code>isMainReceiver: true</code>).</li>
+                <li><strong class="text-emerald-300">replacementReceiver:</strong> Pessoa suplente autorizada para levantamento.</li>
+              </ul>
+            </div>
+
+            <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700/60">
+              <span class="text-xs font-semibold uppercase text-slate-400 tracking-wider">Resposta 200 OK (JMS Staging)</span>
+              <pre class="mt-2 text-xs text-amber-300 font-mono bg-slate-950 p-2.5 rounded border border-slate-800">{
+  "statusCode": "200",
+  "message": "Registos recebidos e colocados na fila de processamento...",
+  "totalReceived": 1,
+  "totalQueued": 1
+}</pre>
+            </div>
+          </div>
+
+          <!-- Code Box -->
+          <div class="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden text-xs">
+            <div class="bg-slate-900 px-3 py-1.5 border-b border-slate-800 flex justify-between items-center text-slate-400 font-mono text-[11px]">
+              <span>Trecho de Payload JSON</span>
+              <span class="text-emerald-400">verificationRecords[]</span>
+            </div>
+            <pre id="curl-verification" class="p-3 text-slate-300 font-mono overflow-x-auto max-h-72 custom-scrollbar text-[12px] leading-relaxed"><code>{
+  "verificationRecords": [
+    {
+      "organicClassifier": "62L000241",
+      "fillDate": "2026-03-11",
+      "supervisor": "0301TECN00001",
+      "socialPrograms": "PSSB",
+      "household": {
+        "householdCode": "0301AF0000001",
+        "territoryCode": "03010101V01",
+        "habitation": {
+          "mainWaterSource": "D2a",
+          "mainWallMaterial": "D3a",
+          "mainRoofingMaterial": "D4d",
+          "mainFloorMaterial": "D5c",
+          "typeOfLatrine": "D6a",
+          "lightSource": "D8a",
+          "housingTypeCode": "D9a",
+          "numberOfRooms": 3,
+          "hasElectricity": "Sim"
+        },
+        "members": [ ... ]
+      }
+    }
+  ]
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 6: ENDPOINT 3 - /importBeneficiaries -->
+      <div class="slide-item hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:p-8 shadow-2xl space-y-6" data-title="Endpoint: /importBeneficiaries (Ficha + Beneficiário)">
+        <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-4 gap-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="bg-purple-600 text-white font-bold text-xs px-2 py-0.5 rounded font-mono">POST</span>
+              <h3 class="text-xl sm:text-2xl font-bold text-white font-mono">/services/api/v1.0/importBeneficiaries</h3>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">Ficha Completa + Inscrição Directa como Beneficiário Elegível.</p>
+          </div>
+          <button onclick="copyToClipboard('curl-beneficiaries')" class="no-print text-xs bg-slate-800 hover:bg-slate-700 text-purple-300 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            Copiar cURL
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="space-y-4">
+            <div class="bg-purple-950/30 border border-purple-800/40 p-4 rounded-xl text-xs space-y-2 text-purple-200">
+              <p class="font-bold text-purple-100">Diferenciais em relação ao inquérito simples:</p>
+              <ul class="list-disc list-inside space-y-1.5 text-slate-300">
+                <li><strong class="text-purple-300">targetGroupCode (Obrigatório):</strong> Define o grupo-alvo ou perfil de vulnerabilidade no programa (ex: <code>"020"</code>).</li>
+                <li><strong class="text-purple-300">paymentServiceProviderNuit:</strong> NUIT da operadora móvel ou instituição bancária conveniada.</li>
+                <li><strong class="text-purple-300">accountNumber:</strong> Conta bancária ou número de telemóvel para transferência móvel.</li>
+                <li><strong class="text-purple-300">Activado na Folha:</strong> A família já entra com status pronto para pagamento.</li>
+              </ul>
+            </div>
+
+            <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700/60">
+              <span class="text-xs font-semibold uppercase text-slate-400 tracking-wider">Cenário Recomendado</span>
+              <p class="text-sm font-semibold text-purple-300 mt-1">Expansão Oficial de Programas (PSSB)</p>
+              <p class="text-xs text-slate-400 mt-1">Ideal para novos cadastros completos que já foram seleccionados e aprovados pelo comitê.</p>
+            </div>
+          </div>
+
+          <!-- Code Box -->
+          <div class="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden text-xs">
+            <div class="bg-slate-900 px-3 py-1.5 border-b border-slate-800 flex justify-between items-center text-slate-400 font-mono text-[11px]">
+              <span>Trecho de Payload JSON</span>
+              <span class="text-purple-400">beneficiaryRecords[]</span>
+            </div>
+            <pre id="curl-beneficiaries" class="p-3 text-slate-300 font-mono overflow-x-auto max-h-72 custom-scrollbar text-[12px] leading-relaxed"><code>{
+  "beneficiaryRecords": [
+    {
+      "organicClassifier": "62L000241",
+      "fillDate": "2026-03-11",
+      "supervisor": "0301TECN00001",
+      "socialPrograms": "PSSB",
+      "targetGroupCode": "020",
+      "paymentServiceProviderNuit": "400123456",
+      "accountNumber": "841234567",
+      "household": {
+        "householdCode": "0301AF0000005",
+        "territoryCode": "03010101V05",
+        "habitation": { ... },
+        "members": [ ... ]
+      }
+    }
+  ]
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 7: BOAS PRÁTICAS E RECOMENDAÇÕES -->
+      <div class="slide-item hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:p-8 shadow-2xl space-y-6" data-title="Boas Práticas e Recomendações Técnicas">
+        <div class="border-b border-slate-800 pb-4">
+          <h3 class="text-2xl font-bold text-white">Boas Práticas e Recomendações Técnicas</h3>
+          <p class="text-xs text-slate-400">Diretrizes de performance, atomicidade e segurança na integração.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="bg-slate-800/40 p-5 rounded-xl border border-slate-700/70 space-y-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-sm">
+              1
+            </div>
+            <h4 class="font-bold text-white text-sm">Tamanho de Lote (Batching)</h4>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Para os endpoints assíncronos (<code class="text-emerald-400">verificationRecords</code> e <code class="text-purple-400">beneficiaries</code>), envie pacotes entre <strong>1 e 500 registos</strong>. Para o <code class="text-blue-400">sync</code>, pacotes de <strong>500 a 1.000</strong> têm excelente rendimento.
+            </p>
+          </div>
+
+          <div class="bg-slate-800/40 p-5 rounded-xl border border-slate-700/70 space-y-3">
+            <div class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center font-bold text-sm">
+              2
+            </div>
+            <h4 class="font-bold text-white text-sm">Atomicidade da Validação</h4>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              A validação do payload é atómica no lote. Se <strong>1 único registo</strong> contiver falhas ou campos obrigatórios omissos, o lote completo retorna <strong>400 Bad Request</strong> com o detalhe de cada erro.
+            </p>
+          </div>
+
+          <div class="bg-slate-800/40 p-5 rounded-xl border border-slate-700/70 space-y-3">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-sm">
+              3
+            </div>
+            <h4 class="font-bold text-white text-sm">Idempotência Segura</h4>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              O reenvio de fichas com mesmo identificador em fila é tratado com segurança pelo staging JMS, evitando duplicações indesejadas de agregados ou pagamentos duplicados.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==================== VIEW 2: FULL DOCUMENTATION MODE ==================== -->
+    <div id="view-doc" class="hidden space-y-8">
+      
+      <!-- Doc Intro -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-4">
+        <h2 class="text-2xl font-bold text-white">Manual Completo de Integração SIB / E-INAS</h2>
+        <p class="text-sm text-slate-300 leading-relaxed">
+          Documento técnico e normativo para interoperabilidade entre o Sistema de Informação de Base (SIB) e o Sistema Electrónico do Instituto Nacional de Acção Social (E-INAS).
+        </p>
+      </div>
+
+      <!-- Matriz de Decisão Rápida -->
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6">
+        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <span class="w-2.5 h-2.5 bg-blue-500 rounded-full"></span> Matriz de Decisão de Endpoints
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="border border-blue-900/40 bg-blue-950/20 p-4 rounded-xl space-y-2">
+            <h4 class="font-bold text-blue-400 font-mono text-sm">/sync</h4>
+            <p class="text-xs text-slate-300">Use quando <strong>já tem a lista de aprovados</strong> e quer apenas registar dados de pagamento sem inquérito domiciliário de habitação.</p>
+          </div>
+          <div class="border border-emerald-900/40 bg-emerald-950/20 p-4 rounded-xl space-y-2">
+            <h4 class="font-bold text-emerald-400 font-mono text-sm">/importVerificationRecords</h4>
+            <p class="text-xs text-slate-300">Use quando recolheu o <strong>censo socioeconómico de campo</strong> mas as famílias <strong>ainda não foram aprovadas</strong> como beneficiárias.</p>
+          </div>
+          <div class="border border-purple-900/40 bg-purple-950/20 p-4 rounded-xl space-y-2">
+            <h4 class="font-bold text-purple-400 font-mono text-sm">/importBeneficiaries</h4>
+            <p class="text-xs text-slate-300">Use quando recolheu o <strong>inquérito completo E as famílias foram aprovadas</strong>, entrando imediatamente para folha de pagamentos.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tabela dos 13 Campos do /sync -->
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-4">
+        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full"></span> Tabela dos 13 Campos do Endpoint <code>/sync</code>
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="border-b border-slate-700 bg-slate-800/50 text-slate-300 font-semibold uppercase">
+                <th class="p-2.5 text-center">Nº</th>
+                <th class="p-2.5">Campo JSON</th>
+                <th class="p-2.5">Nome no Negócio</th>
+                <th class="p-2.5">Tipo</th>
+                <th class="p-2.5">Obrigatório?</th>
+                <th class="p-2.5">Observação</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800 text-slate-300">
+              <tr>
+                <td class="p-2.5 text-center font-mono">1</td>
+                <td class="p-2.5 font-mono text-blue-300">neighborhoodOrVillageCode</td>
+                <td class="p-2.5">COD. BAIRRO/POVOACAO</td>
+                <td class="p-2.5">String</td>
+                <td class="p-2.5 text-emerald-400 font-bold">Sim</td>
+                <td class="p-2.5 text-slate-400">Activo em <code>TERRITORIAL_CLASSIFIER</code></td>
+              </tr>
+              <tr>
+                <td class="p-2.5 text-center font-mono">2</td>
+                <td class="p-2.5 font-mono text-blue-300">householdCode</td>
+                <td class="p-2.5">CODIGO AF</td>
+                <td class="p-2.5">String</td>
+                <td class="p-2.5 text-emerald-400 font-bold">Sim</td>
+                <td class="p-2.5 text-slate-400">Código único do Agregado Familiar</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 text-center font-mono">3</td>
+                <td class="p-2.5 font-mono text-blue-300">name</td>
+                <td class="p-2.5">NOMES</td>
+                <td class="p-2.5">String</td>
+                <td class="p-2.5 text-emerald-400 font-bold">Sim</td>
+                <td class="p-2.5 text-slate-400">Primeiro nome / nomes do beneficiário</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 text-center font-mono">4</td>
+                <td class="p-2.5 font-mono text-blue-300">lastName</td>
+                <td class="p-2.5">APELIDO</td>
+                <td class="p-2.5">String</td>
+                <td class="p-2.5 text-emerald-400 font-bold">Sim</td>
+                <td class="p-2.5 text-slate-400">Apelido do beneficiário principal</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 text-center font-mono">5</td>
+                <td class="p-2.5 font-mono text-blue-300">birthDate</td>
+                <td class="p-2.5">DATA NASCIMENTO</td>
+                <td class="p-2.5">String</td>
+                <td class="p-2.5 text-emerald-400 font-bold">Sim</td>
+                <td class="p-2.5 text-slate-400"><code>YYYY-MM-DD</code> ou <code>DD/MM/YYYY</code></td>
+              </tr>
+              <tr>
+                <td class="p-2.5 text-center font-mono">6</td>
+                <td class="p-2.5 font-mono text-blue-300">gender</td>
+                <td class="p-2.5">GENERO</td>
+                <td class="p-2.5">String</td>
+                <td class="p-2.5 text-emerald-400 font-bold">Sim</td>
+                <td class="p-2.5 text-slate-400"><code>M</code> ou <code>F</code></td>
+              </tr>
+              <tr>
+                <td class="p-2.5 text-center font-mono">7</td>
+                <td class="p-2.5 font-mono text-blue-300">memberNumber</td>
+                <td class="p-2.5">NUMERO DE MEMBROS</td>
+                <td class="p-2.5">Integer</td>
+                <td class="p-2.5 text-emerald-400 font-bold">Sim</td>
+                <td class="p-2.5 text-slate-400">Total de pessoas no agregado</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 text-center font-mono">8</td>
+                <td class="p-2.5 font-mono text-blue-300">socialProgram</td>
+                <td class="p-2.5">PROGRAMA</td>
+                <td class="p-2.5">String</td>
+                <td class="p-2.5 text-slate-400">Opcional</td>
+                <td class="p-2.5 text-slate-400">Herda código raiz se vazio</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 text-center font-mono">9</td>
+                <td class="p-2.5 font-mono text-blue-300">replacementReceiverName</td>
+                <td class="p-2.5">NOME DO RECEPTOR SUBSTITUTO</td>
+                <td class="p-2.5">String</td>
+                <td class="p-2.5 text-slate-400">Opcional</td>
+                <td class="p-2.5 text-slate-400">Vazio se não houver</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 text-center font-mono">10</td>
+                <td class="p-2.5 font-mono text-blue-300">replacementReceiverLastName</td>
+                <td class="p-2.5">APELIDO RECEPTOR SUBSTITUTO</td>
+                <td class="p-2.5">String</td>
+                <td class="p-2.5 text-slate-400">Opcional</td>
+                <td class="p-2.5 text-slate-400">Vazio se não houver</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 text-center font-mono">11</td>
+                <td class="p-2.5 font-mono text-blue-300">targetGroupCode</td>
+                <td class="p-2.5">GRUPO ALVO</td>
+                <td class="p-2.5">String</td>
+                <td class="p-2.5 text-emerald-400 font-bold">Sim</td>
+                <td class="p-2.5 text-slate-400">Código activo (ex: <code>020</code>)</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 text-center font-mono">12</td>
+                <td class="p-2.5 font-mono text-blue-300">paymentServiceProviderNuit</td>
+                <td class="p-2.5">NUIT DO PROVEDOR</td>
+                <td class="p-2.5">String</td>
+                <td class="p-2.5 text-amber-400 font-medium">Condicional</td>
+                <td class="p-2.5 text-slate-400">NUIT PSP móvel ou bancário</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 text-center font-mono">13</td>
+                <td class="p-2.5 font-mono text-blue-300">accountNumber</td>
+                <td class="p-2.5">NUMERO DE CONTA</td>
+                <td class="p-2.5">String</td>
+                <td class="p-2.5 text-amber-400 font-medium">Condicional</td>
+                <td class="p-2.5 text-slate-400">Conta bancária ou telefone móvel</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ==================== VIEW 3: SIMULATOR / DECISION HELPER ==================== -->
+    <div id="view-sim" class="hidden space-y-6">
+      
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6">
+        <div>
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+            <span>&#129517;</span> Assistente Interactivo de Decisão
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            Responda às duas perguntas abaixo para descobrir automaticamente qual endpoint atende aos seus requisitos.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Pergunta 1 -->
+          <div class="bg-slate-800/40 p-5 rounded-xl border border-slate-700/60 space-y-3">
+            <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">Passo 1</span>
+            <h4 class="text-sm font-semibold text-white">Você tem os dados detalhados do inquérito socioeconómico (habitação, materiais, bens e membros)?</h4>
+            <div class="space-y-2 pt-2">
+              <label class="flex items-center gap-3 p-3 rounded-lg bg-slate-900/60 border border-slate-700/60 cursor-pointer hover:border-blue-500 transition">
+                <input type="radio" name="q_survey" value="no" onchange="runSimulation()" checked class="text-blue-600 focus:ring-0">
+                <span class="text-xs text-slate-200"><strong>Não.</strong> Tenho apenas dados cadastrais essenciais e de pagamento.</span>
+              </label>
+              <label class="flex items-center gap-3 p-3 rounded-lg bg-slate-900/60 border border-slate-700/60 cursor-pointer hover:border-blue-500 transition">
+                <input type="radio" name="q_survey" value="yes" onchange="runSimulation()" class="text-blue-600 focus:ring-0">
+                <span class="text-xs text-slate-200"><strong>Sim.</strong> Tenho a ficha de inquérito com indicadores de pobreza e habitação.</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Pergunta 2 -->
+          <div id="box-q-approved" class="bg-slate-800/40 p-5 rounded-xl border border-slate-700/60 space-y-3 opacity-50 pointer-events-none transition">
+            <span class="text-xs font-bold text-purple-400 uppercase tracking-wider">Passo 2</span>
+            <h4 class="text-sm font-semibold text-white">O agregado familiar já foi formalmente aprovado para receber subsídio activo no programa?</h4>
+            <div class="space-y-2 pt-2">
+              <label class="flex items-center gap-3 p-3 rounded-lg bg-slate-900/60 border border-slate-700/60 cursor-pointer hover:border-purple-500 transition">
+                <input type="radio" name="q_approved" value="no" onchange="runSimulation()" checked class="text-purple-600 focus:ring-0">
+                <span class="text-xs text-slate-200"><strong>Não.</strong> É apenas diagnóstico de campo / censo (não aprovado ainda).</span>
+              </label>
+              <label class="flex items-center gap-3 p-3 rounded-lg bg-slate-900/60 border border-slate-700/60 cursor-pointer hover:border-purple-500 transition">
+                <input type="radio" name="q_approved" value="yes" onchange="runSimulation()" class="text-purple-600 focus:ring-0">
+                <span class="text-xs text-slate-200"><strong>Sim.</strong> Aprovado para entrar imediatamente em folha de pagamentos.</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Diagnostic Result -->
+        <div id="sim-result" class="p-6 rounded-xl border bg-slate-800/80 border-slate-700 space-y-3">
+          <!-- Filled dynamically by JS -->
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Script for Navigation & Interactivity -->
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide-item');
+    const totalSlides = slides.length;
+
+    function updateSlide() {
+      slides.forEach((s, idx) => {
+        if (idx === currentSlide) {
+          s.classList.remove('hidden');
+        } else {
+          s.classList.add('hidden');
+        }
+      });
+      document.getElementById('slide-indicator').textContent = (currentSlide + 1);
+      document.getElementById('slide-total').textContent = totalSlides;
+      const title = slides[currentSlide].getAttribute('data-title') || '';
+      document.getElementById('slide-title-preview').textContent = title;
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft') {
+        prevSlide();
+      }
+    });
+
+    function setMode(mode) {
+      document.getElementById('view-slides').classList.add('hidden');
+      document.getElementById('view-doc').classList.add('hidden');
+      document.getElementById('view-sim').classList.add('hidden');
+
+      const btnSlides = document.getElementById('btn-mode-slides');
+      const btnDoc = document.getElementById('btn-mode-doc');
+      const btnSim = document.getElementById('btn-mode-sim');
+
+      [btnSlides, btnDoc, btnSim].forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+        btn.classList.add('text-slate-300');
+      });
+
+      if (mode === 'slides') {
+        document.getElementById('view-slides').classList.remove('hidden');
+        btnSlides.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+        btnSlides.classList.remove('text-slate-300');
+      } else if (mode === 'doc') {
+        document.getElementById('view-doc').classList.remove('hidden');
+        btnDoc.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+        btnDoc.classList.remove('text-slate-300');
+      } else if (mode === 'sim') {
+        document.getElementById('view-sim').classList.remove('hidden');
+        btnSim.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+        btnSim.classList.remove('text-slate-300');
+        runSimulation();
+      }
+    }
+
+    function copyToClipboard(elementId) {
+      const text = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.remove('opacity-0');
+        setTimeout(() => toast.classList.add('opacity-0'), 2500);
+      });
+    }
+
+    function runSimulation() {
+      const surveyVal = document.querySelector('input[name="q_survey"]:checked').value;
+      const boxApproved = document.getElementById('box-q-approved');
+      const simResult = document.getElementById('sim-result');
+
+      if (surveyVal === 'no') {
+        boxApproved.classList.add('opacity-50', 'pointer-events-none');
+        simResult.className = "p-6 rounded-xl border border-blue-500/40 bg-blue-950/20 space-y-3";
+        simResult.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 bg-blue-600 text-white font-mono text-xs font-bold rounded">RECOMENDADO: /sync</span>
+            <span class="text-xs text-blue-300 font-semibold">Sincronização Rápida de Beneficiários</span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Como você tem apenas os dados cadastrais básicos e de pagamento, o serviço <code class="text-blue-400 font-mono">POST /services/api/v1.0/sync</code> é a escolha ideal. Ele é processado de forma síncrona em lote e cria/actualiza o beneficiário imediatamente no E-INAS com o payload conciso de 13 campos.
+          </p>
+        `;
+      } else {
+        boxApproved.classList.remove('opacity-50', 'pointer-events-none');
+        const approvedVal = document.querySelector('input[name="q_approved"]:checked').value;
+
+        if (approvedVal === 'no') {
+          simResult.className = "p-6 rounded-xl border border-emerald-500/40 bg-emerald-950/20 space-y-3";
+          simResult.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 bg-emerald-600 text-white font-mono text-xs font-bold rounded">RECOMENDADO: /importVerificationRecords</span>
+              <span class="text-xs text-emerald-300 font-semibold">Apenas Ficha de Inquérito / Verificação</span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Como as famílias ainda não foram autorizadas para pagamento, você deve enviar o questionário através de <code class="text-emerald-400 font-mono">POST /services/api/v1.0/importVerificationRecords</code>. O E-INAS registrará a composição, habitação e bens na fila assíncrona (JMS), sem gerar folhas de pagamento prematuras.
+            </p>
+          `;
+        } else {
+          simResult.className = "p-6 rounded-xl border border-purple-500/40 bg-purple-950/20 space-y-3";
+          simResult.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 bg-purple-600 text-white font-mono text-xs font-bold rounded">RECOMENDADO: /importBeneficiaries</span>
+              <span class="text-xs text-purple-300 font-semibold">Ficha Completa + Cadastro de Beneficiário</span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Perfeito para admissão oficial e expansão directa de programas (ex: PSSB). O endpoint <code class="text-purple-400 font-mono">POST /services/api/v1.0/importBeneficiaries</code> grava o inquérito socioeconómico completo E activa imediatamente o agregado para pagamento, associando o <code class="text-purple-300 font-mono">targetGroupCode</code> e a conta/PSP indicada.
+            </p>
+          `;
+        }
+      }
+    }
+
+    // Initialize
+    updateSlide();
+  </script>
+</body>
+</html>

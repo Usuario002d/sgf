@@ -1,0 +1,28 @@
+INSERT INTO account_plans (
+    number,
+    description,
+    writable,
+    type,
+    class,
+    state,
+    created_at,
+    updated_at
+) VALUES
+('1.0.0.0.00', 'Despesas Correntes', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('1.1.0.0.00', 'Despesas com o Pessoal', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('1.1.1.0.00', 'Salários e Remunerações', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('1.1.1.1.00', 'Pessoal Civil', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('1.1.2.0.00', 'Demais Despesas com o Pessoal', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('1.1.2.1.00', 'Pessoal Civil', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('1.2.0.0.00', 'Bens e Serviços', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('1.2.1.0.00', 'Bens', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('1.2.2.0.00', 'Serviços', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('1.4.0.0.00', 'Transferências Correntes', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('1.6.0.0.00', 'Exercicios Findos', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('1.6.1.0.00', 'Retroactivos Salariais do Exercicio Corrente para Pessoal Civil', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('1.6.2.0.00', 'Retroactivos de Bens e Servicos', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('2.0.0.0.00', 'Despesas de Capital', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('2.1.0.0.00', 'Bens de Capital', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('2.1.1.0.00', 'Construções', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('2.1.2.0.00', 'Maquinaria, Equipamento e Mobiliario', 'controll', 'budject', 'A', 1, NOW(), NOW()),
+('2.1.3.0.00', 'Meios de Transporte', 'controll', 'budject', 'A', 1, NOW(), NOW());

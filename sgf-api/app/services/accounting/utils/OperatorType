@@ -1,0 +1,4 @@
+export enum operatorType {
+  DEBIT = 'DEBIT',
+  CREDIT = 'CREDIT',
+}

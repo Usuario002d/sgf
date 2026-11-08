@@ -1,0 +1,166 @@
+/* ==========================================================================
+   Accounts Payable & Receivable — Scoped Modern Enterprise Styles
+   ========================================================================== */
+
+.custom-scroll,
+div.custom-scroll {
+  max-height: none !important;
+  height: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 4px !important;
+  overflow: visible !important;
+}
+
+/* Compact executive header replacing bloated 2rem header-wrapper */
+.header-wrapper {
+  padding: 8px 16px !important;
+  margin-bottom: 12px !important;
+  border-radius: 8px !important;
+  background: linear-gradient(90deg, #0b221b 0%, #0f3d2e 60%, #14533c 100%) !important;
+  border: 1px solid #a7d7be !important;
+  box-shadow: 0 2px 6px rgba(15, 81, 50, 0.12) !important;
+  display: flex !important;
+  align-items: center !important;
+  justifyContent: space-between !important;
+}
+
+.header-wrapper div[style*="width: 40px"],
+.header-wrapper div[style*="width:40px"],
+.header-wrapper h6 {
+  display: none !important;
+}
+
+.header-wrapper h2 {
+  font-size: 1.15rem !important;
+  margin: 0 !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  line-height: 1.25 !important;
+}
+
+.header-wrapper h2 span {
+  background: none !important;
+  -webkit-text-fill-color: #ffffff !important;
+  color: #ffffff !important;
+}
+
+.disabled-input {
+  background-color: #f1f5f9 !important;
+  color: #64748b !important;
+  cursor: not-allowed;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f1f7f4 !important;
+}
+
+/* Soft Institutional Emerald row selection (eliminating pure black active state) */
+.table-hover tbody tr.table-active,
+tbody tr.active,
+tr.active,
+tr.active td,
+.table-row.active,
+.table-row.active td {
+  background-color: #d1e7dd !important;
+  color: #0f5132 !important;
+  font-weight: 700 !important;
+  border-left: 4px solid #0f5132 !important;
+}
+
+.btn-view-entries {
+  background-color: #0f5132;
+  color: #ffffff;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.btn-view-entries:hover {
+  background-color: #0a3622;
+  box-shadow: 0 3px 8px rgba(15, 81, 50, 0.22);
+}
+
+.btn-view-entries:focus {
+  outline: none;
+}
+
+/* ==========================================================================
+   Modais Centralizados, Espaçosos e com Design Institucional
+   ========================================================================== */
+
+.modal {
+  text-align: center;
+  padding: 0 !important;
+}
+
+.modal-dialog {
+  margin: 1.75rem auto !important;
+}
+
+.modal-dialog.modal-xl,
+.modal-xl .modal-dialog,
+.custom-modal,
+.custom-modal .modal-dialog {
+  max-width: 94vw !important;
+  width: 94vw !important;
+}
+
+.modal-content {
+  border-radius: 12px !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.22) !important;
+  overflow: hidden !important;
+  background-color: #ffffff !important;
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #0f5132 0%, #145a32 100%) !important;
+  color: #ffffff !important;
+  padding: 14px 24px !important;
+  border-bottom: 2px solid #b7dec9 !important;
+}
+
+.modal-header .modal-title,
+.modal-header h4,
+.modal-header h5 {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 1.15rem !important;
+}
+
+.modal-header .btn-close,
+.modal-header .close {
+  filter: invert(1) brightness(2) !important;
+  opacity: 0.85 !important;
+}
+
+.modal-body {
+  padding: 24px 28px !important;
+  background-color: #f8fafc !important;
+  max-height: calc(88vh - 130px) !important;
+  overflow-y: auto !important;
+}
+
+.modal-footer {
+  padding: 14px 24px !important;
+  background-color: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+/* Cartões de Ação Executivos */
+.sgf-action-card {
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.sgf-action-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(15, 81, 50, 0.12) !important;
+  border-color: #0f5132 !important;
+}
