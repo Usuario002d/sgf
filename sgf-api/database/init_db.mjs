@@ -49,14 +49,24 @@ async function initDatabaseIfNeeded() {
     await conn.query(`CREATE DATABASE IF NOT EXISTS \`${cfg.database}\`;`);
     await conn.query(`USE \`${cfg.database}\`;`);
 
-    const [tables] = await conn.query("SHOW TABLES LIKE 'account_plans'");
+    let needsImport = false;
+    const [tables] = await conn.query("SHOW TABLES LIKE 'users'");
     if (tables.length === 0) {
+      needsImport = true;
+    } else {
+      const [userCount] = await conn.query("SELECT COUNT(*) AS cnt FROM `users`");
+      if (!userCount || userCount[0].cnt === 0) {
+        needsImport = true;
+      }
+    }
+
+    if (needsImport) {
       const sqlPath = path.join(__dirname, 'sgf_2026_estruturado.sql');
       if (fs.existsSync(sqlPath)) {
-        console.log('[DB-INIT] Base de dados vazia detectada. A importar sgf_2026_estruturado.sql automaticamente...');
+        console.log('[DB-INIT] Base de dados vazia ou incompleta detectada. A importar sgf_2026_estruturado.sql automaticamente...');
         const sql = fs.readFileSync(sqlPath, 'utf8');
         await conn.query(sql);
-        console.log('[DB-INIT] ✅ Base de dados SGF 2026 (28 tabelas e 104 contas zeradas) importada com sucesso!');
+        console.log('[DB-INIT] ✅ Base de dados SGF 2026 (28 tabelas, utilizadores e 104 contas zeradas) importada com sucesso!');
       }
     } else {
       console.log('[DB-INIT] ✅ Base de dados já inicializada e pronta.');
