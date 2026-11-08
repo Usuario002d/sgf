@@ -22,12 +22,12 @@ function resolveConnectionConfig() {
     }
   }
 
-  const railwayPass = process.env.MYSQLPASSWORD || process.env.MYSQL_ROOT_PASSWORD;
-  const host = process.env.DB_HOST || process.env.MYSQLHOST || (railwayPass ? 'mysql.railway.internal' : '');
+  const isProd = process.env.NODE_ENV === 'production';
+  const host = process.env.DB_HOST || process.env.MYSQLHOST || (isProd ? 'mysql.railway.internal' : '127.0.0.1');
   const port = Number(process.env.DB_PORT || process.env.MYSQLPORT || 3306);
-  const user = process.env.DB_USER || process.env.MYSQLUSER || (railwayPass ? 'root' : '');
-  const password = process.env.DB_PASSWORD || railwayPass || '';
-  const database = process.env.DB_DATABASE || process.env.MYSQLDATABASE || (railwayPass ? 'railway' : '');
+  const user = process.env.DB_USER || process.env.MYSQLUSER || (isProd ? 'root' : 'sgf');
+  const password = process.env.DB_PASSWORD || process.env.MYSQLPASSWORD || process.env.MYSQL_ROOT_PASSWORD || (isProd ? 'vuFumMqLaTPLVMdjVXbNVIDCgHqpLfJo' : 'sgf');
+  const database = process.env.DB_DATABASE || process.env.MYSQLDATABASE || (isProd ? 'railway' : 'sgf');
 
   return { host, port, user, password, database };
 }
@@ -35,18 +35,19 @@ function resolveConnectionConfig() {
 async function initDatabaseIfNeeded() {
   const cfg = resolveConnectionConfig();
 
-  if (!cfg.host || !cfg.user || !cfg.database) {
-    console.log('[DB-INIT] Variáveis de base de dados ainda não definidas no serviço. Configure MYSQL_URL ou DB_HOST nas Variables.');
-    return;
-  }
-
   let conn;
   try {
     console.log(`[DB-INIT] A ligar a MySQL em ${cfg.host}:${cfg.port} (db: ${cfg.database})...`);
     conn = await mysql.createConnection({
-      ...cfg,
+      host: cfg.host,
+      port: cfg.port,
+      user: cfg.user,
+      password: cfg.password,
       multipleStatements: true,
     });
+
+    await conn.query(`CREATE DATABASE IF NOT EXISTS \`${cfg.database}\`;`);
+    await conn.query(`USE \`${cfg.database}\`;`);
 
     const [tables] = await conn.query("SHOW TABLES LIKE 'account_plans'");
     if (tables.length === 0) {

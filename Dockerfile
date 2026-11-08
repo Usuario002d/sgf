@@ -14,6 +14,10 @@ ENV HOST=0.0.0.0
 ENV PORT=3333
 ENV LOG_LEVEL=info
 ENV APP_KEY=z8F7xK2mP9qR4vW1nL6jB3yT5cH0dG8s
+ENV DB_HOST=mysql.railway.internal
+ENV DB_PORT=3306
+ENV DB_USER=root
+ENV DB_DATABASE=railway
 COPY --from=api-builder /api/build ./
 COPY sgf-web/build ./public
 COPY sgf-api/database/init_db.mjs ./init_db.mjs
