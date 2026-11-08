@@ -1,10 +1,15 @@
 import env from '#start/env'
 import { defineConfig } from '@adonisjs/lucid'
 
-console.log('DB_HOST:', env.get('DB_HOST'));
-console.log('DB_USER:', env.get('DB_USER'));
-console.log('DB_PASSWORD:', env.get('DB_PASSWORD'));
-console.log('DB_DATABASE:', env.get('DB_DATABASE'));
+const dbHost = env.get('DB_HOST') || process.env.MYSQLHOST || '127.0.0.1'
+const dbPort = Number(env.get('DB_PORT') || process.env.MYSQLPORT || 3306)
+const dbUser = env.get('DB_USER') || process.env.MYSQLUSER || 'sgf'
+const dbPassword = env.get('DB_PASSWORD') || process.env.MYSQLPASSWORD || 'sgf'
+const dbDatabase = env.get('DB_DATABASE') || process.env.MYSQLDATABASE || 'sgf'
+
+console.log('DB_HOST:', dbHost)
+console.log('DB_USER:', dbUser)
+console.log('DB_DATABASE:', dbDatabase)
 
 const dbConfig = defineConfig({
   connection: 'mysql',
@@ -12,11 +17,11 @@ const dbConfig = defineConfig({
     mysql: {
       client: 'mysql2',
       connection: {
-        host: env.get('DB_HOST'),
-        port: env.get('DB_PORT'),
-        user: env.get('DB_USER'),
-        password: env.get('DB_PASSWORD'),
-        database: env.get('DB_DATABASE'),
+        host: dbHost,
+        port: dbPort,
+        user: dbUser,
+        password: dbPassword,
+        database: dbDatabase,
       },
       migrations: {
         naturalSort: true,

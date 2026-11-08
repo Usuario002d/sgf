@@ -1,3 +1,6 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import app from '@adonisjs/core/services/app'
 /*
 |--------------------------------------------------------------------------
 | Routes file (SGF Enterprise API)
@@ -189,3 +192,24 @@ router.group(() => {
 
 
 }).prefix("sgf-api");
+
+// Serve React SPA Frontend in production
+const publicDir = app.makePath('public')
+const serveSpaFrontend = async ({ request, response }: any) => {
+  const reqPath = request.url(false)
+  if (reqPath.startsWith('/sgf-api')) {
+    return response.status(404).json({ message: 'Endpoint not found' })
+  }
+  const safePath = path.normalize(reqPath).replace(/^(\.\.(\/|\\|$))+/, '')
+  const filePath = path.join(publicDir, safePath)
+  if (reqPath !== '/' && fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    return response.download(filePath)
+  }
+  const indexHtml = path.join(publicDir, 'index.html')
+  if (fs.existsSync(indexHtml)) {
+    return response.type('text/html').send(fs.readFileSync(indexHtml, 'utf8'))
+  }
+  return response.status(200).json({ status: 'SGF API Online' })
+}
+router.get('/', serveSpaFrontend)
+router.get('/*', serveSpaFrontend)
