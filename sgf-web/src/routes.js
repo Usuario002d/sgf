@@ -138,7 +138,6 @@ const dashboardRoutes = [
         icon: SwapHoriz,
         component: (props) => <PrivateRoute component={BudgetChange} {...props} />,
         layout: "/admin",
-        visibility: false,
       },
       {
         path: "/planandbudget/planandbudgetConformance",
@@ -147,7 +146,6 @@ const dashboardRoutes = [
         component: (props) => <PrivateRoute component={BudjectConformance} {...props} />,
         layout: "/admin",
         requiredPermission: "planoOrcamento",
-        visibility: false,
       },
     ],
   },
