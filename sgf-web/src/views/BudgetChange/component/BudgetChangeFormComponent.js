@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { Badge, Card, Row, Col, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import {
@@ -185,13 +185,10 @@ const BudgetChangeFormComponent = () => {
 
   const findAccountPlanConformance = async () => {
     try {
-      setLoading(true);
       const response = await findConformInitialAllocation();
-      setIsConformed(response);
+      setIsConformed(Boolean(response));
     } catch (error) {
       console.error("Erro ao buscar conformidade:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -237,13 +234,23 @@ const BudgetChangeFormComponent = () => {
 
   const validateInitialAllocationApprovalDateValidate = async () => {
     try {
-      setLoading(true);
       const response = await validateInitialAllocationApprovalDate();
       if (response && response.data?.approvalDate) {
         setValidationDate(response.data.approvalDate);
       }
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const refreshAllData = async () => {
+    setLoading(true);
+    try {
+      await Promise.allSettled([
+        loadAccounts(),
+        findAccountPlanConformance(),
+        validateInitialAllocationApprovalDateValidate(),
+      ]);
     } finally {
       setLoading(false);
     }
@@ -365,17 +372,15 @@ const BudgetChangeFormComponent = () => {
           operationDate,
         });
 
+        setModalShow(false);
+        await refreshAllData();
+
         await Swal.fire({
           icon: "success",
           title: "Sucesso!",
           text: "Inscrição/Reforço registado com sucesso!",
           confirmButtonColor: "#0f5132",
         });
-
-        setModalShow(false);
-        loadAccounts();
-        findAccountPlanConformance();
-        validateInitialAllocationApprovalDateValidate();
       } else if (modalType === "anulacaoReducao") {
         if (!formData.codSend || typeof formData.codSend !== "string") {
           Swal.fire({
@@ -405,17 +410,15 @@ const BudgetChangeFormComponent = () => {
           operationDate,
         });
 
+        setModalShow(false);
+        await refreshAllData();
+
         await Swal.fire({
           icon: "success",
           title: "Sucesso!",
           text: "Anulação/Redução registada com sucesso!",
           confirmButtonColor: "#0f5132",
         });
-
-        setModalShow(false);
-        loadAccounts();
-        findAccountPlanConformance();
-        validateInitialAllocationApprovalDateValidate();
       } else {
         if (!sourceAccountData.codSend || typeof sourceAccountData.codSend !== "string") {
           Swal.fire({
@@ -482,20 +485,18 @@ const BudgetChangeFormComponent = () => {
 
         await redistribuition({ ...payload, operationDate });
 
+        setModalShow(false);
+        setSourceAccountData({ codSend: "", codigo: "" });
+        setDestinationAccounts([{ codigoDestino: "", valorDestino: "" }]);
+        setFormData({ motivo: "" });
+        await refreshAllData();
+
         await Swal.fire({
           icon: "success",
           title: "Sucesso!",
           text: "Redistribuição registada com sucesso!",
           confirmButtonColor: "#0f5132",
         });
-
-        setModalShow(false);
-        loadAccounts();
-        findAccountPlanConformance();
-        validateInitialAllocationApprovalDateValidate();
-        setSourceAccountData({ codSend: "", codigo: "" });
-        setDestinationAccounts([{ codigoDestino: "", valorDestino: "" }]);
-        setFormData({ motivo: "" });
       }
     } catch (error) {
       Swal.fire({
@@ -517,7 +518,9 @@ const BudgetChangeFormComponent = () => {
           "reinforcement",
           "annulment",
           "redistribuition_reinforcement",
+          "redistribution_reinforcement",
           "redistribuition_annulment",
+          "redistribution_annulment",
         ].includes(entry.type)
       )
       .forEach((entry) => {
@@ -525,9 +528,13 @@ const BudgetChangeFormComponent = () => {
         const reforco = entry.type === "reinforcement" ? entry.allocation : 0;
         const anulacao = entry.type === "annulment" ? entry.allocation : 0;
         const aumento =
-          entry.type === "redistribuition_reinforcement" ? entry.allocation : 0;
+          (entry.type === "redistribuition_reinforcement" || entry.type === "redistribution_reinforcement")
+            ? entry.allocation
+            : 0;
         const diminuicao =
-          entry.type === "redistribuition_annulment" ? entry.allocation : 0;
+          (entry.type === "redistribuition_annulment" || entry.type === "redistribution_annulment")
+            ? entry.allocation
+            : 0;
         const dotacaoFinal =
           dotacaoInicial + reforco - anulacao + aumento - diminuicao;
 
@@ -573,9 +580,16 @@ const BudgetChangeFormComponent = () => {
                 backgroundColor: "#ecfdf5",
                 color: "#047857",
                 border: "1px solid #a7f3d0",
+                fontSize: "0.82rem",
+                padding: "6px 12px",
               }}
             >
               <FaCheckCircle className="me-1" /> Orçamento Conformado
+              {validationDate && (
+                <span className="ms-1" style={{ opacity: 0.9 }}>
+                  ({new Date(validationDate).toLocaleDateString("pt-PT")})
+                </span>
+              )}
             </span>
           ) : (
             <span
@@ -584,6 +598,8 @@ const BudgetChangeFormComponent = () => {
                 backgroundColor: "#fffbeb",
                 color: "#b45309",
                 border: "1px solid #fde68a",
+                fontSize: "0.82rem",
+                padding: "6px 12px",
               }}
             >
               <FaExclamationTriangle className="me-1" /> Aguarda Conformidade Inicial
@@ -904,6 +920,7 @@ const BudgetChangeFormComponent = () => {
         setSourceAccountData={setSourceAccountData}
         destinationAccounts={destinationAccounts}
         setDestinationAccounts={setDestinationAccounts}
+        validationDate={validationDate}
       />
 
       {/* Modal de Histórico e Filtros */}

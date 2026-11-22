@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import "bootstrap/dist/css/bootstrap.min.css";
 import { fetchAccountPlanEntriesByYearByfilters, findAccountPlanBudjectEntriesByYear, fetchAccountPlanBudjectEntriesByYear, fetchInitialAllocationsByParentId, fetchSummationAccountEntriesEntry, setCreateAccountPlanBudjectEntry } from '../../services/accountService';
 import { Card, Button, Form, DropdownButton, Dropdown, Modal } from 'react-bootstrap';
@@ -804,51 +804,44 @@ const PlanBudgetReport = () => {
     let totalFinalAmount = 0;
 
     localParentAccounts.forEach(mov => {
-      mov.entriesEntry
+      const entries = mov.entriesEntry || [];
+      const initialEntry = entries.find(e => e.type === "initial_allocation");
+      const baseInitial = initialEntry?.allocation || mov.initialAllocation || 0;
+      totalInitialAmount += baseInitial;
+
+      entries
         .filter(entry =>
-          ["reinforcement", "annulment", "redistribuition_reinforcement", "redistribuition_annulment"].includes(entry.type)
+          ["reinforcement", "annulment", "redistribuition_reinforcement", "redistribution_reinforcement", "redistribuition_annulment", "redistribution_annulment"].includes(entry.type)
         )
         .forEach(entry => {
-          const dotacaoInicial = entry.lastFinalAllocation || 0;
-          let aumento = 0;
-          let diminuicao = 0;
-
           if (entry.type === "reinforcement") {
-            aumento = entry.allocation;
-            totalReinforcement += aumento;
+            totalReinforcement += entry.allocation;
           } else if (entry.type === "annulment") {
-            diminuicao = entry.allocation;
-            totalReduction += diminuicao;
-          } else if (entry.type === "redistribuition_reinforcement") {
-            aumento = entry.allocation;
-            totalRedistributionUp += aumento;
-          } else if (entry.type === "redistribuition_annulment") {
-            diminuicao = entry.allocation;
-            totalRedistributionDown += diminuicao;
+            totalReduction += entry.allocation;
+          } else if (entry.type === "redistribuition_reinforcement" || entry.type === "redistribution_reinforcement") {
+            totalRedistributionUp += entry.allocation;
+          } else if (entry.type === "redistribuition_annulment" || entry.type === "redistribution_annulment") {
+            totalRedistributionDown += entry.allocation;
           }
-
-          const dotacaoFinal = dotacaoInicial + aumento - diminuicao;
-
-          totalInitialAmount += dotacaoInicial;
-          totalFinalAmount += dotacaoFinal;
         });
     });
 
-    // Multiplicando por 2.5 conforme utilizado na visualização da tabela
+    totalInitialAmount *= 2.5;
     totalReinforcement *= 2.5;
-    // totalReduction *= 2.5;
+    totalReduction *= 2.5;
     totalRedistributionUp *= 2.5;
     totalRedistributionDown *= 2.5;
-    totalFinalAmount *= 2.5;
+    totalFinalAmount = totalInitialAmount + totalReinforcement - totalReduction + totalRedistributionUp - totalRedistributionDown;
 
-    // 5. Totais formatados
+    // 5. Totais formatados para 7 colunas correspondentes
     const totalRow = [
-      "", "Totais:",
-      formatNumber(totalReinforcement),
-      formatNumber(totalInitialAmount),
-      formatNumber(totalRedistributionUp),
-      formatNumber(totalRedistributionDown),
-      "", "", "",
+      "Totais:",
+      formatNumber(totalInitialAmount.toFixed(2)),
+      formatNumber(totalReinforcement.toFixed(2)),
+      formatNumber(totalReduction.toFixed(2)),
+      formatNumber(totalRedistributionUp.toFixed(2)),
+      formatNumber(totalRedistributionDown.toFixed(2)),
+      formatNumber(totalFinalAmount.toFixed(2)),
     ];
 
     // 6. Junta corpo com os totais
@@ -3172,56 +3165,100 @@ const PlanBudgetReport = () => {
                 <tbody
                   style={{ color: "black", fontWeight: "500" }}
                 >
-                  {localParentAccounts.map((mov, index) => (
-                    <React.Fragment key={index}>
-                      {mov.entriesEntry
-                        .filter(entry =>
-                          entry.type === "reinforcement" ||
-                          entry.type === "annulment" ||
-                          entry.type === "redistribuition_reinforcement" ||
-                          entry.type === "redistribuition_annulment"
-                        )
-                        .map((entry, entryIndex) => {
+                  {localParentAccounts.map((mov, index) => {
+                    const entries = mov.entriesEntry || [];
+                    const initialEntry = entries.find(e => e.type === "initial_allocation");
+                    const baseInitialAllocation = initialEntry?.allocation || mov.initialAllocation || 0;
+                    const initialDate = initialEntry?.operationDate
+                      ? (initialEntry.operationDate.includes('-')
+                          ? (() => {
+                              const p = initialEntry.operationDate.split('-');
+                              return p[0].length === 4 ? `${p[2]}/${p[1]}/${p[0]}` : `${p[0]}/${p[1]}/${p[2]}`;
+                            })()
+                          : initialEntry.operationDate)
+                      : (mov.createdAt ? new Date(mov.createdAt).toLocaleDateString('pt-PT') : 'Inicial');
+
+                    const movements = entries.filter(e =>
+                      e.type === "reinforcement" ||
+                      e.type === "annulment" ||
+                      e.type === "redistribuition_reinforcement" ||
+                      e.type === "redistribution_reinforcement" ||
+                      e.type === "redistribuition_annulment" ||
+                      e.type === "redistribution_annulment"
+                    );
+
+                    let runningAllocation = baseInitialAllocation;
+
+                    return (
+                      <React.Fragment key={index}>
+                        {/* Linha 1: Dotação Inicial Aprovada */}
+                        <tr style={{ backgroundColor: "#f8fafc", fontWeight: "600" }}>
+                          <td style={{ padding: '8px', textAlign: 'left' }}>
+                            {initialDate} <span className="badge bg-secondary ms-1" style={{ fontSize: '0.7rem' }}>Inicial</span>
+                          </td>
+                          <td style={{ padding: '8px', textAlign: 'right' }}>{formatNumber((baseInitialAllocation * 2.5).toFixed(2))}</td>
+                          <td style={{ padding: '8px', textAlign: 'right' }}>-</td>
+                          <td style={{ padding: '8px', textAlign: 'right' }}>-</td>
+                          <td style={{ padding: '8px', textAlign: 'right' }}>-</td>
+                          <td style={{ padding: '8px', textAlign: 'right' }}>-</td>
+                          <td style={{ padding: '8px', textAlign: 'right', fontWeight: "700" }}>{formatNumber((baseInitialAllocation * 2.5).toFixed(2))}</td>
+                        </tr>
+
+                        {/* Linhas Subsequentes: Histórico de Alterações */}
+                        {movements.map((entry, entryIndex) => {
+                          const isRedistReinforce = entry.type === "redistribuition_reinforcement" || entry.type === "redistribution_reinforcement";
+                          const isRedistAnnul = entry.type === "redistribuition_annulment" || entry.type === "redistribution_annulment";
+                          const isReinforce = entry.type === "reinforcement";
+                          const isAnnul = entry.type === "annulment";
 
                           let aumento = 0;
                           let diminuicao = 0;
-                          if (entry.type === "redistribuition_reinforcement") {
-                            aumento = entry.allocation;
-                          } else if (entry.type === "redistribuition_annulment") {
-                            diminuicao = entry.allocation;
-                          } else {
-                            aumento = entry.type === "reinforcement" ? entry.allocation : 0;
-                            diminuicao = entry.type === "annulment" ? entry.allocation : 0;
-                          }
-                          let dotacaoInicial = entry.lastFinalAllocation || 0;
-                          const dotacaoFinal = dotacaoInicial + aumento - diminuicao;
+                          let aumentoRedist = 0;
+                          let diminuicaoRedist = 0;
+
+                          if (isReinforce) aumento = entry.allocation;
+                          if (isAnnul) diminuicao = entry.allocation;
+                          if (isRedistReinforce) aumentoRedist = entry.allocation;
+                          if (isRedistAnnul) diminuicaoRedist = entry.allocation;
+
+                          const dotacaoInicial = entry.lastFinalAllocation || runningAllocation;
+                          const totalAumento = aumento + aumentoRedist;
+                          const totalDiminuicao = diminuicao + diminuicaoRedist;
+                          const dotacaoFinal = dotacaoInicial + totalAumento - totalDiminuicao;
+                          runningAllocation = dotacaoFinal;
+
+                          const formattedDate = entry.operationDate
+                            ? (entry.operationDate.includes('-')
+                                ? (() => {
+                                    const parts = entry.operationDate.split('-');
+                                    return parts[0].length === 4 ? `${parts[2]}/${parts[1]}/${parts[0]}` : `${parts[0]}/${parts[1]}/${parts[2]}`;
+                                  })()
+                                : entry.operationDate)
+                            : '-';
+
                           return (
                             <tr key={entryIndex}>
-                              <td style={{ padding: '8px', textAlign: 'left' }}>
-                                {(() => {
-                                  const [day, month, year] = entry.operationDate.split('-');
-                                  return `${day}/${month}/${year}`;
-                                })()}
-                              </td>
+                              <td style={{ padding: '8px', textAlign: 'left' }}>{formattedDate}</td>
                               <td style={{ padding: '8px', textAlign: 'right' }}>{formatNumber((dotacaoInicial * 2.5).toFixed(2))}</td>
-                              <td style={{ padding: '8px', textAlign: 'right' }}>
-                                {entry.type === "reinforcement" ? formatNumber((aumento * 2.5).toFixed(2)) : formatNumber(0)}
+                              <td style={{ padding: '8px', textAlign: 'right', color: aumento > 0 ? '#15803d' : 'inherit' }}>
+                                {aumento > 0 ? formatNumber((aumento * 2.5).toFixed(2)) : '-'}
                               </td>
-                              <td style={{ padding: '8px', textAlign: 'right' }}>
-                                {entry.type === "annulment" ? formatNumber((diminuicao * 2.5).toFixed(2)) : formatNumber(0)}
+                              <td style={{ padding: '8px', textAlign: 'right', color: diminuicao > 0 ? '#b91c1c' : 'inherit' }}>
+                                {diminuicao > 0 ? formatNumber((diminuicao * 2.5).toFixed(2)) : '-'}
                               </td>
-                              <td style={{ padding: '8px', textAlign: 'right' }}>
-                                {entry.type === "redistribuition_reinforcement" ? formatNumber((aumento * 2.5).toFixed(2)) : formatNumber(0)}
+                              <td style={{ padding: '8px', textAlign: 'right', color: aumentoRedist > 0 ? '#15803d' : 'inherit' }}>
+                                {aumentoRedist > 0 ? formatNumber((aumentoRedist * 2.5).toFixed(2)) : '-'}
                               </td>
-                              <td style={{ padding: '8px', textAlign: 'right' }}>
-                                {entry.type === "redistribuition_annulment" ? formatNumber((diminuicao * 2.5).toFixed(2)) : formatNumber(0)}
+                              <td style={{ padding: '8px', textAlign: 'right', color: diminuicaoRedist > 0 ? '#b91c1c' : 'inherit' }}>
+                                {diminuicaoRedist > 0 ? formatNumber((diminuicaoRedist * 2.5).toFixed(2)) : '-'}
                               </td>
-                              <td style={{ padding: '8px', textAlign: 'right' }}>{formatNumber((dotacaoFinal * 2.5).toFixed(2))}</td>
+                              <td style={{ padding: '8px', textAlign: 'right', fontWeight: "700" }}>{formatNumber((dotacaoFinal * 2.5).toFixed(2))}</td>
                             </tr>
                           );
                         })}
-                    </React.Fragment>
-                  ))}
+                      </React.Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

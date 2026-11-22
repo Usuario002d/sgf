@@ -1,4 +1,4 @@
-import db from "@adonisjs/lucid/services/db";
+﻿import db from "@adonisjs/lucid/services/db";
 import AccountPlanYear from "../../models/planbudject/account_plan_year.js";
 import AccountPlanEntry from "../../models/planbudject/account_plan_entry.js";
 import AccountPlanEntryEntry from "../../models/planbudject/account_plan_entry_entry.js";
@@ -44,7 +44,6 @@ export default class AccountPlanBudjectService {
     return await this.accountPlanEntryService.conformInitialAllocation(data);
   }
 
-  public async 
   public async importInitialAllocationsFromExcel(data?: {
     filePath?: string;
     allocations?: Array<{
@@ -347,21 +346,36 @@ export default class AccountPlanBudjectService {
       const totalWithApprovalDate = await AccountPlanEntryEntry
         .query()
         .where('account_plan_year_id', active.id)
-        .whereNotNull('initial_allocation_approval_date')
+        .where((q) => {
+          q.whereNotNull('initial_allocation_approval_date')
+           .orWhere('compliance_status', 'CONFORMANCE')
+           .orWhereNotNull('compliance_date');
+        })
         .count('id as total');
 
-      const totalInitial = Number(totalInitialAllocation[0].$extras.total);
-      const totalApproved = Number(totalWithApprovalDate[0].$extras.total);
+      const totalInitial = Number(totalInitialAllocation[0]?.$extras?.total || 0);
+      const totalApproved = Number(totalWithApprovalDate[0]?.$extras?.total || 0);
 
-      if (totalInitial > 0 && totalInitial === totalApproved) {
-        const approvalDate = await AccountPlanEntryEntry
+      if (totalInitial > 0 && totalApproved > 0) {
+        const approvalEntry = await AccountPlanEntryEntry
           .query()
-          .select('initial_allocation_approval_date')
           .where('type', 'initial_allocation')
           .where('account_plan_year_id', active.id)
+          .where((q) => {
+            q.whereNotNull('initial_allocation_approval_date')
+             .orWhereNotNull('compliance_date');
+          })
           .first();
 
-        return { valid: true, approvalDate: approvalDate?.initialAllocationApprovalDate };
+        const rawApprovalDate = approvalEntry?.initialAllocationApprovalDate || approvalEntry?.complianceDate;
+        return {
+          valid: true,
+          approvalDate: rawApprovalDate,
+          complianceDate: approvalEntry?.complianceDate,
+          complianceStatus: approvalEntry?.complianceStatus || 'CONFORMANCE',
+          approvedBy: approvalEntry?.approvedBy,
+          descriptionCompliance: approvalEntry?.descriptionCompliance,
+        };
       } else {
         return { valid: false, approvalDate: null };
       }
@@ -704,53 +718,45 @@ export default class AccountPlanBudjectService {
     filters: { startDate?: string | null; endDate?: string | null; accountPlanId?: string | null }
   ) {
     const active = await this.accountPlanEntryService.resolveActivePlanYear(Number(year));
-    const now = DateTime.now();
-  
-    // Cria a query base com os relacionamentos
+
+    const formatDateOnly = (dateTime: DateTime) => {
+      return dateTime.toFormat('yyyy-MM-dd');
+    };
+
     const query = AccountPlanEntry.query()
       .whereHas('accountPlanYear', (builder) => {
         builder.where('year', active.year);
       })
       .preload('accountPlan')
       .preload('accountPlanYear')
-      .preload('entriesEntry')
+      .preload('entriesEntry', (entriesQuery) => {
+        entriesQuery.orderBy('operation_date', 'asc').orderBy('created_at', 'asc');
+        if (filters.startDate) {
+          const startDate = DateTime.fromISO(filters.startDate);
+          if (startDate.isValid) {
+            entriesQuery.where((q) => {
+              q.where('type', 'initial_allocation')
+               .orWhereRaw('DATE(operation_date) >= ?', [formatDateOnly(startDate)]);
+            });
+          }
+        }
+        if (filters.endDate) {
+          const endDate = DateTime.fromISO(filters.endDate);
+          if (endDate.isValid) {
+            entriesQuery.where((q) => {
+              q.where('type', 'initial_allocation')
+               .orWhereRaw('DATE(operation_date) <= ?', [formatDateOnly(endDate)]);
+            });
+          }
+        }
+      })
       .preload('accountPlanfinancial');
-  
+
     // Aplica filtro de accountPlanId se existir
     if (filters.accountPlanId) {
       query.where('account_plan_id', filters.accountPlanId);
     }
-  
-    // Formata datas para considerar apenas YYYY-MM-DD
-    const formatDateOnly = (dateTime: DateTime) => {
-      return dateTime.toFormat('yyyy-MM-dd');
-    };
-  
-    // Aplica filtro de data de início se existir
-    if (filters.startDate) {
-      const startDate = DateTime.fromISO(filters.startDate);
-      if (startDate.isValid) {
-        query.whereRaw('DATE(COALESCE(created_at, updated_at)) >= ?', [formatDateOnly(startDate)]);
-      }
-    } else {
-      // Data padrão: início do mês atual
-      query.whereRaw('DATE(COALESCE(created_at, updated_at)) >= ?', [formatDateOnly(now.startOf('month'))]);
-    }
-  
-    // Aplica filtro de data de fim se existir
-    if (filters.endDate) {
-      const endDate = DateTime.fromISO(filters.endDate);
-      if (endDate.isValid) {
-        query.whereRaw('DATE(COALESCE(created_at, updated_at)) <= ?', [formatDateOnly(endDate)]);
-      }
-    } else {
-      // Data padrão: fim do mês atual
-      query.whereRaw('DATE(COALESCE(created_at, updated_at)) <= ?', [formatDateOnly(now.endOf('month'))]);
-    }
-  
-    // Debug opcional da query
-    console.debug(query.toQuery());
-  
+
     return await query;
   }
   

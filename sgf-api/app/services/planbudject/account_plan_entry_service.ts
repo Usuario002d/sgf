@@ -341,7 +341,8 @@ export default class AccountPlanEntryService {
                     complianceStatus: 'CONFORMANCE',
                     descriptionCompliance: data.observation,
                     approvedBy: data.userId,
-                    complianceDate: new Date() // Data e hora atual
+                    complianceDate: new Date(), // Data e hora atual
+                    initialAllocationApprovalDate: new Date()
                 });
 
 
@@ -426,6 +427,28 @@ export default class AccountPlanEntryService {
         try {
 
             const currentPlanYear = await this.resolveActivePlanYear((data as any)?.year);
+
+            if (!isInitialAlocation) {
+                const approvalEntry = await AccountPlanEntryEntry
+                    .query({ client: trx })
+                    .where('type', EntryEntryType.INITIAL_ALLOCATION)
+                    .where('account_plan_year_id', currentPlanYear.id)
+                    .where((q) => {
+                        q.whereNotNull('initial_allocation_approval_date')
+                         .orWhereNotNull('compliance_date');
+                    })
+                    .first();
+
+                if (approvalEntry) {
+                    const rawApproval = approvalEntry.initialAllocationApprovalDate || approvalEntry.complianceDate;
+                    const approvalDate = new Date(rawApproval);
+                    const opDateStr = parsedDate.toISOString().slice(0, 10);
+                    const appDateStr = approvalDate.toISOString().slice(0, 10);
+                    if (opDateStr < appDateStr) {
+                        throw new Error(`Não é possível registar alteração orçamental com data (${opDateStr}) anterior à aprovação da dotação inicial (${appDateStr}).`);
+                    }
+                }
+            }
 
             let entry = await this.findAccountPlanEntriesByYearAndNumber(currentPlanYear.year, data.accountPlanNumber);
 
@@ -550,6 +573,28 @@ export default class AccountPlanEntryService {
             }
 
             const currentPlanYear = await this.resolveActivePlanYear((data as any)?.year);
+
+            if (!isInitialAlocation) {
+                const approvalEntry = await AccountPlanEntryEntry
+                    .query({ client: trx })
+                    .where('type', EntryEntryType.INITIAL_ALLOCATION)
+                    .where('account_plan_year_id', currentPlanYear.id)
+                    .where((q) => {
+                        q.whereNotNull('initial_allocation_approval_date')
+                         .orWhereNotNull('compliance_date');
+                    })
+                    .first();
+
+                if (approvalEntry) {
+                    const rawApproval = approvalEntry.initialAllocationApprovalDate || approvalEntry.complianceDate;
+                    const approvalDate = new Date(rawApproval);
+                    const opDateStr = parsedDate.toISOString().slice(0, 10);
+                    const appDateStr = approvalDate.toISOString().slice(0, 10);
+                    if (opDateStr < appDateStr) {
+                        throw new Error(`Não é possível registar alteração orçamental com data (${opDateStr}) anterior à aprovação da dotação inicial (${appDateStr}).`);
+                    }
+                }
+            }
             let entry = await this.findAccountPlanEntriesByYearAndNumber(currentPlanYear.year, data.accountPlanNumber);
 
             if (!entry) {
@@ -666,6 +711,27 @@ export default class AccountPlanEntryService {
             }
 
             const currentPlanbudject = await this.resolveActivePlanYear((data as any)?.year);
+
+            const approvalEntry = await AccountPlanEntryEntry
+                .query({ client: trx })
+                .where('type', EntryEntryType.INITIAL_ALLOCATION)
+                .where('account_plan_year_id', currentPlanbudject.id)
+                .where((q) => {
+                    q.whereNotNull('initial_allocation_approval_date')
+                     .orWhereNotNull('compliance_date');
+                })
+                .first();
+
+            if (approvalEntry) {
+                const rawApproval = approvalEntry.initialAllocationApprovalDate || approvalEntry.complianceDate;
+                const approvalDate = new Date(rawApproval);
+                const parsedOpDate = new Date(data.operationDate);
+                const opDateStr = parsedOpDate.toISOString().slice(0, 10);
+                const appDateStr = approvalDate.toISOString().slice(0, 10);
+                if (opDateStr < appDateStr) {
+                    throw new Error(`Não é possível registar alteração orçamental com data (${opDateStr}) anterior à aprovação da dotação inicial (${appDateStr}).`);
+                }
+            }
 
             let originEntry = await this.findAccountPlanEntriesByYearAndNumber(currentPlanbudject.year, data.originAccountPlanNumber);
             if (!originEntry) {

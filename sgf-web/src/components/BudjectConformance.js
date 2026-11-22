@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import {
   findAccountPlanBudjectEntriesByYear,
   validateInitialAllocationApprovalDate,
@@ -45,6 +45,7 @@ const BudjectConformance = () => {
   const [firistAccounts, setFiristAccounts] = useState([]);
   const [selectedAccountName, setSelectedAccountName] = useState('');
   const [isConformed, setIsConformed] = useState(false);
+  const [approvalDate, setApprovalDate] = useState(null);
   const savedUserData = JSON.parse(localStorage.getItem('userData'));
   const [showModal, setShowModal] = useState(false);
   const [valuesAccounts, setValuesAccounts] = useState([]);
@@ -201,6 +202,14 @@ const BudjectConformance = () => {
       setLoading(true);
       const response = await findConformInitialAllocation();
       setIsConformed(Boolean(response));
+      try {
+        const dateResp = await validateInitialAllocationApprovalDate();
+        if (dateResp && dateResp.data?.approvalDate) {
+          setApprovalDate(dateResp.data.approvalDate);
+        }
+      } catch (e) {
+        // ignore
+      }
     } catch (error) {
       console.error('Erro ao buscar conformidade:', error);
     } finally {
@@ -698,7 +707,7 @@ const BudjectConformance = () => {
               }}
             >
               {isConformed ? <FaCheckCircle /> : <FaExclamationTriangle />}
-              {isConformed ? 'Orçamento Conforme' : 'Conformidade Pendente'}
+              {isConformed ? (approvalDate ? `Orçamento Conforme (${new Date(approvalDate).toLocaleDateString('pt-PT')})` : 'Orçamento Conforme') : 'Conformidade Pendente'}
             </span>
             <span
               style={{
@@ -799,7 +808,7 @@ const BudjectConformance = () => {
                 {isConformed ? (
                   <>
                     <FaCheckCircle style={{ color: '#0d6832' }} />
-                    CONFORME
+                    CONFORME {approvalDate && <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#047857' }}>({new Date(approvalDate).toLocaleDateString('pt-PT')})</span>}
                   </>
                 ) : (
                   <>

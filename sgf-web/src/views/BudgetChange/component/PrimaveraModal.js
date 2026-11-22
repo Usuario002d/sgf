@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 import {
   FaMoneyBillWave,
@@ -24,6 +24,7 @@ const PrimaveraModal = ({
   setSourceAccountData,
   destinationAccounts = [],
   setDestinationAccounts,
+  validationDate,
 }) => {
   const [selectedAccountName, setSelectedAccountName] = useState("");
 
@@ -209,8 +210,14 @@ const PrimaveraModal = ({
                 name="dataInicio"
                 value={operationDate}
                 onChange={handleDateChange}
+                min={validationDate ? new Date(validationDate).toISOString().slice(0, 10) : undefined}
                 max={getCurrentDate()}
               />
+              {validationDate && (
+                <div className="mt-1" style={{ fontSize: "0.75rem", color: "#64748b" }}>
+                  Data mínima: {new Date(validationDate).toLocaleDateString("pt-PT")} (Aprovação da Dotação Inicial)
+                </div>
+              )}
             </Col>
             <Col md={7}>
               <div style={{ fontSize: "0.82rem", color: "#2d443d" }}>
@@ -246,8 +253,21 @@ const PrimaveraModal = ({
                         <strong>Descrição Completa:</strong> {formData.codSend} — {formData.descricao}
                       </div>
                       {formData.dotacaoInicial !== undefined && formData.dotacaoInicial !== "" && (
-                        <div className="mt-1" style={{ color: "#0f5132", fontWeight: 600 }}>
-                          Dotação Actual: {Number(formData.dotacaoInicial || 0).toLocaleString("pt-MZ", { minimumFractionDigits: 2 })}
+                        <div className="mt-2 p-2 rounded" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", fontSize: "0.88rem" }}>
+                          <div style={{ color: "#0f5132", fontWeight: 700 }}>
+                            Dotação Actualizada:
+                          </div>
+                          <div className="d-flex flex-wrap gap-3 mt-1">
+                            <span style={{ color: "#166534" }}>
+                              <strong>USD:</strong> $ {Number(formData.dotacaoInicial || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                            <span style={{ color: "#166534" }}>
+                              <strong>MZN:</strong> {Number((formData.dotacaoInicial || 0) * 2.5).toLocaleString("pt-MZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MT
+                            </span>
+                            <span className="text-muted" style={{ fontSize: "0.8rem" }}>
+                              (Câmbio: 2.50 MT/USD)
+                            </span>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -315,8 +335,21 @@ const PrimaveraModal = ({
                         <strong>Descrição Completa:</strong> {formData.codSend} — {formData.descricao}
                       </div>
                       {formData.dotacaoInicial !== undefined && formData.dotacaoInicial !== "" && (
-                        <div className="mt-1" style={{ color: "#be123c", fontWeight: 600 }}>
-                          Dotação Actual: {Number(formData.dotacaoInicial || 0).toLocaleString("pt-MZ", { minimumFractionDigits: 2 })}
+                        <div className="mt-2 p-2 rounded" style={{ background: "#fff1f2", border: "1px solid #fecdd3", fontSize: "0.88rem" }}>
+                          <div style={{ color: "#be123c", fontWeight: 700 }}>
+                            Dotação Disponível:
+                          </div>
+                          <div className="d-flex flex-wrap gap-3 mt-1">
+                            <span style={{ color: "#9f1239" }}>
+                              <strong>USD:</strong> $ {Number(formData.dotacaoInicial || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                            <span style={{ color: "#9f1239" }}>
+                              <strong>MZN:</strong> {Number((formData.dotacaoInicial || 0) * 2.5).toLocaleString("pt-MZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MT
+                            </span>
+                            <span className="text-muted" style={{ fontSize: "0.8rem" }}>
+                              (Câmbio: 2.50 MT/USD)
+                            </span>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -407,8 +440,21 @@ const PrimaveraModal = ({
                           <strong>Descrição Completa:</strong> {sourceAccountData.codSend} — {sourceAccountData.descricao}
                         </div>
                         {sourceAccountData.dotacaoInicial !== undefined && sourceAccountData.dotacaoInicial !== "" && (
-                          <div className="mt-1" style={{ color: "#92400e", fontWeight: 600 }}>
-                            Dotação Disponível: {Number(sourceAccountData.dotacaoInicial || 0).toLocaleString("pt-MZ", { minimumFractionDigits: 2 })}
+                          <div className="mt-2 p-2 rounded" style={{ background: "#fffbeb", border: "1px solid #fde68a", fontSize: "0.88rem" }}>
+                            <div style={{ color: "#92400e", fontWeight: 700 }}>
+                              Dotação Disponível:
+                            </div>
+                            <div className="d-flex flex-wrap gap-3 mt-1">
+                              <span style={{ color: "#78350f" }}>
+                                <strong>USD:</strong> $ {Number(sourceAccountData.dotacaoInicial || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                              <span style={{ color: "#78350f" }}>
+                                <strong>MZN:</strong> {Number((sourceAccountData.dotacaoInicial || 0) * 2.5).toLocaleString("pt-MZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MT
+                              </span>
+                              <span className="text-muted" style={{ fontSize: "0.8rem" }}>
+                                (Câmbio: 2.50 MT/USD)
+                              </span>
+                            </div>
                           </div>
                         )}
                       </div>
