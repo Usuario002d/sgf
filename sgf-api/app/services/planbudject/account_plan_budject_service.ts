@@ -1,4 +1,4 @@
-﻿import db from "@adonisjs/lucid/services/db";
+import db from "@adonisjs/lucid/services/db";
 import AccountPlanYear from "../../models/planbudject/account_plan_year.js";
 import AccountPlanEntry from "../../models/planbudject/account_plan_entry.js";
 import AccountPlanEntryEntry from "../../models/planbudject/account_plan_entry_entry.js";

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import "bootstrap/dist/css/bootstrap.min.css";
 import { fetchAccountPlanEntriesByYearByfilters, findAccountPlanBudjectEntriesByYear, fetchAccountPlanBudjectEntriesByYear, fetchInitialAllocationsByParentId, fetchSummationAccountEntriesEntry, setCreateAccountPlanBudjectEntry } from '../../services/accountService';
 import { Card, Button, Form, DropdownButton, Dropdown, Modal } from 'react-bootstrap';
@@ -198,12 +198,32 @@ const PlanBudgetReport = () => {
           : undefined
       });
 
-      setLocalParentAccounts(response);
-
-      setAccountSelected(accountSelectedGone)
-
-
-      if (response.length === 0) {
+      if (Array.isArray(response) && response.length > 0) {
+        setLocalParentAccounts(response);
+        setAccountSelected(response);
+      } else if (accountSelectedGone && accountSelectedGone.length > 0) {
+        const startISO = filters.startDate || null;
+        const endISO = filters.endDate || null;
+        const locallyFiltered = accountSelectedGone.map((acc) => ({
+          ...acc,
+          entriesEntry: (acc.entriesEntry || []).filter((entry) => {
+            if (entry.type === 'initial_allocation') return true;
+            if (!startISO && !endISO) return true;
+            if (!entry.operationDate) return true;
+            const parts = entry.operationDate.split('-');
+            const entryISO = parts[0].length === 4
+              ? entry.operationDate
+              : `${parts[2]}-${parts[1]}-${parts[0]}`;
+            if (startISO && entryISO < startISO) return false;
+            if (endISO && entryISO > endISO) return false;
+            return true;
+          }),
+        }));
+        setLocalParentAccounts(locallyFiltered);
+        setAccountSelected(locallyFiltered);
+      } else {
+        setLocalParentAccounts([]);
+        setAccountSelected([]);
         Swal.fire({
           icon: 'info',
           title: 'Nenhum resultado',
@@ -230,16 +250,17 @@ const PlanBudgetReport = () => {
       account.accountPlan.number === selectedCodigo
     );
 
-    setAccountSelectedGone(filteredAccounts)
-
-    console.log("contafiltrada", filteredAccounts)
+    setAccountSelectedGone(filteredAccounts);
+    setAccountSelected(filteredAccounts);
 
     if (filteredAccounts.length > 0) {
+      setLocalParentAccounts(filteredAccounts);
       setFilters(prevFilters => ({
         ...prevFilters,
         accountPlanId: filteredAccounts[0].accountPlan.id
       }));
     } else {
+      setLocalParentAccounts(parentAccounts);
       setFilters(prevFilters => ({
         ...prevFilters,
         accountPlanId: null
@@ -3054,7 +3075,7 @@ const PlanBudgetReport = () => {
                   alignItems: 'center',
                   gap: '8px'
                 }}>
-                  {accountSelected[0]?.finalAllocation * 2.5 ?? 0}
+                  {formatNumber(((accountSelected[0]?.finalAllocation || 0) * 2.5).toFixed(2))}
                   <span style={{
                     fontSize: '16px',
                     background: 'rgba(0, 210, 255, 0.2)',
