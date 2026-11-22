@@ -337,7 +337,7 @@ const PrimaveraModal = ({
                       {formData.dotacaoInicial !== undefined && formData.dotacaoInicial !== "" && (
                         <div className="mt-2 p-2 rounded" style={{ background: "#fff1f2", border: "1px solid #fecdd3", fontSize: "0.88rem" }}>
                           <div style={{ color: "#be123c", fontWeight: 700 }}>
-                            Dotação Disponível:
+                            Dotação Actualizada:
                           </div>
                           <div className="d-flex flex-wrap gap-3 mt-1">
                             <span style={{ color: "#9f1239" }}>
@@ -442,7 +442,7 @@ const PrimaveraModal = ({
                         {sourceAccountData.dotacaoInicial !== undefined && sourceAccountData.dotacaoInicial !== "" && (
                           <div className="mt-2 p-2 rounded" style={{ background: "#fffbeb", border: "1px solid #fde68a", fontSize: "0.88rem" }}>
                             <div style={{ color: "#92400e", fontWeight: 700 }}>
-                              Dotação Disponível:
+                              Dotação Actualizada:
                             </div>
                             <div className="d-flex flex-wrap gap-3 mt-1">
                               <span style={{ color: "#78350f" }}>
