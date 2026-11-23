@@ -2127,13 +2127,6 @@ const PlanBudgetReport = () => {
       fixedValues116["1.6.0.0.00"].decrease += redistributionAnnulment;
     }
 
-    console.log("Valores de 1.6.0.0.00:");
-    console.log("Inscription16:", inscription16);
-    console.log("Annulment16:", annulment16);
-    console.log("Increase16:", increase16);
-    console.log("Decrease16:", decrease16);
-    console.log("Dados Finais 1.6:", fixedValues116);
-
     if (descricao === "2.1.1.0" || descricao === "2.1.2.0" || descricao === "2.1.3.0") {
       fixedValues1112["1.1.2.0.00"].inscription += reinforcement;
       fixedValues1112["1.1.2.0.00"].annulment += annulment;
