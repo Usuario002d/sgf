@@ -528,7 +528,7 @@ export default class AccountPlanEntryService {
             const updatedEntry = await entry.useTransaction(trx)
                 .save();
 
-            await this.updateParentsAccountPlanEntriesByChildOther(updatedEntry, data.value, isReinforce, isInitialAlocation, trx);
+            await this.recalculateParentEntriesForYear(currentPlanYear.id, trx);
 
             await trx.commit();
             return updatedEntry;
@@ -661,7 +661,7 @@ export default class AccountPlanEntryService {
             const updatedEntry = await entry.useTransaction(trx).save();
 
             // Update parent accounts
-            await this.updateParentsAccountPlanEntriesByChild(updatedEntry, data.value, isReinforce, trx);
+            await this.recalculateParentEntriesForYear(currentPlanYear.id, trx);
 
             await trx.commit();
             return updatedEntry;
@@ -842,8 +842,8 @@ export default class AccountPlanEntryService {
                 await targetEntry.useTransaction(trx).save();
 
                 if (originEntry.id != targetEntry.id) {
-                    await this.updateParentsAccountPlanEntriesByChild(originEntry, valueToTransfer, false, trx);
-                    await this.updateParentsAccountPlanEntriesByChild(targetEntry, valueToTransfer, true, trx);
+                    await this.recalculateParentEntriesForYear(currentPlanbudject.id, trx);
+
                 }
             }
 
@@ -1194,12 +1194,12 @@ export default class AccountPlanEntryService {
             console.log("[15] Propagando atualização para contas pais...");
 
             if (data.newValue === 0) {
-                await this.updateParentsAccountPlanEntriesByChildNew(updatedEntry, lastValue, lastValue, false, trx);
+                await this.recalculateParentEntriesForYear(activePlanYear.id, trx);
                 await trx.commit();
                 return updatedEntry;
             }
 
-            await this.updateParentsAccountPlanEntriesByChildNew(updatedEntry, data.newValue, lastValue, isCredit, trx);
+            await this.recalculateParentEntriesForYear(activePlanYear.id, trx);
             console.log("[16] Atualização dos pais concluída");
 
             console.log("[17] Efetuando commit da transação...");

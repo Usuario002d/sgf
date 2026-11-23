@@ -649,80 +649,47 @@ const BudjectTableComponent = () => {
     return total;
   };
 
-  const calculateFinalAllocation = (account) => {
-    let totalAllocation = 0;
-    const finalAllocationType = account.accountPlan?.finalAllocationType;
-    const initialAllocationEntry = account.entriesEntry?.find(
+  const getLeafInitialUsd = (account) => {
+    const initialEntry = account.entriesEntry?.find(
       (entry) => entry.type === "initial_allocation"
     );
-    const initialAllocation = initialAllocationEntry
-      ? initialAllocationEntry.allocation
-      : 0;
-
     if (
-      ["L", "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9"].includes(
-        finalAllocationType
-      )
+      initialEntry &&
+      initialEntry.allocation !== undefined &&
+      initialEntry.allocation !== null
     ) {
-      totalAllocation += calculateChildrenAllocation(account);
-    } else if (finalAllocationType === "A") {
-      totalAllocation = totalCurrentExpenses;
-    } else if (finalAllocationType === "L4") {
-      totalAllocation = avalueL4;
-    } else if (finalAllocationType === "A1") {
-      totalAllocation = calculateChildrenAllocationA2(account);
-    } else if (finalAllocationType === "A2") {
-      totalAllocation = calculateChildrenAllocationA2(account);
-    } else if (finalAllocationType === "A3") {
-      totalAllocation += calculateChildrenAllocationA2(account);
-    } else if (finalAllocationType === "A4") {
-      const l2Account = accounts.find(
-        (acc) => acc.accountPlan?.finalAllocationType === "L2"
-      );
-      const l3Account = accounts.find(
-        (acc) => acc.accountPlan?.finalAllocationType === "L3"
-      );
-      const l2Allocation = l2Account ? calculateChildrenAllocation(l2Account) : 0;
-      const l3Allocation = l3Account ? calculateChildrenAllocation(l3Account) : 0;
-      totalAllocation = l2Allocation + l3Allocation;
-    } else if (finalAllocationType === "A5") {
-      totalAllocation = avalueA5;
-    } else if (finalAllocationType === "A7" || finalAllocationType === "A8") {
-      totalAllocation = totalCapitalExpenses;
-    } else {
-      totalAllocation += initialAllocation || 0;
+      return Number(initialEntry.allocation) || 0;
     }
-    return totalAllocation;
+    return Number(account.initialAllocation ?? account.finalAllocation ?? 0) || 0;
+  };
+
+  const calculateFinalAllocation = (account) => {
+    if (!account) return 0;
+    if (account.children && Array.isArray(account.children) && account.children.length > 0) {
+      return account.children.reduce(
+        (sum, child) => sum + calculateFinalAllocation(child),
+        0
+      );
+    }
+    return getLeafInitialUsd(account);
   };
 
   const calculateFinalAllocationTotal = (account, type) => {
-    let totalAllocation = 0;
     if (type === "AFF") {
-      const relevantAccounts = accounts.filter((acc) =>
-        ["A3", "A2", "L4", "L5", "L6", "L2", "L3"].includes(
-          acc.accountPlan?.finalAllocationType
+      return organizedAccounts
+        .filter((acc) =>
+          String(acc.accountPlan?.number || acc.accountPlanNumber || "").startsWith("1.")
         )
-      );
-      relevantAccounts.forEach((accountItem) => {
-        totalAllocation += (accountItem.children || []).reduce(
-          (acc, child) => acc + calculateFinalAllocation(child),
-          0
-        );
-      });
-    } else if (type === "AFC") {
-      const relevantAccounts = accounts.filter((acc) =>
-        ["L7", "L8", "L9"].includes(acc.accountPlan?.finalAllocationType)
-      );
-      relevantAccounts.forEach((accountItem) => {
-        totalAllocation += (accountItem.children || []).reduce(
-          (acc, child) => acc + calculateFinalAllocation(child),
-          0
-        );
-      });
-    } else {
-      totalAllocation += account.finalAllocation || 0;
+        .reduce((sum, root) => sum + calculateFinalAllocation(root), 0);
     }
-    return totalAllocation;
+    if (type === "AFC") {
+      return organizedAccounts
+        .filter((acc) =>
+          String(acc.accountPlan?.number || acc.accountPlanNumber || "").startsWith("2.")
+        )
+        .reduce((sum, root) => sum + calculateFinalAllocation(root), 0);
+    }
+    return calculateFinalAllocation(account);
   };
 
   const totalCurrentExpenses = calculateFinalAllocationTotal(accounts, "AFF");

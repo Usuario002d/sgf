@@ -422,69 +422,47 @@ const BudjectConformance = () => {
     return total;
   };
 
-  const calculateFinalAllocation = (account) => {
-    let totalAllocation = 0;
-    const finalAllocationType = account.accountPlan?.finalAllocationType;
-
-    const initialAllocationEntry = account.entriesEntry?.find(
+  const getLeafInitialUsd = (account) => {
+    const initialEntry = account.entriesEntry?.find(
       (entry) => entry.type === 'initial_allocation'
     );
-    const initialAllocation = initialAllocationEntry ? initialAllocationEntry.allocation : 0;
-
     if (
-      ['L', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9'].includes(finalAllocationType)
+      initialEntry &&
+      initialEntry.allocation !== undefined &&
+      initialEntry.allocation !== null
     ) {
-      totalAllocation += calculateChildrenAllocation(account);
-    } else if (finalAllocationType === 'A') {
-      totalAllocation = totalCurrentExpenses;
-    } else if (finalAllocationType === 'L4') {
-      totalAllocation = avalueL4;
-    } else if (finalAllocationType === 'A1') {
-      totalAllocation = avalueA1;
-    } else if (finalAllocationType === 'A2') {
-      if (valuesAccounts.length >= 1) {
-        totalAllocation = valuesAccounts[0].total_allocation;
-      } else {
-        totalAllocation = 0;
-      }
-    } else if (finalAllocationType === 'A3') {
-      totalAllocation += calculateChildrenAllocationA2(account);
-    } else if (finalAllocationType === 'A4') {
-      totalAllocation = avalueA4;
-    } else if (finalAllocationType === 'A5') {
-      totalAllocation = avalueA5;
-    } else if (finalAllocationType === 'A7' || finalAllocationType === 'A8') {
-      totalAllocation = avalueA7;
-    } else {
-      totalAllocation += initialAllocation || 0;
+      return Number(initialEntry.allocation) || 0;
     }
-    return totalAllocation;
+    return Number(account.initialAllocation ?? account.finalAllocation ?? 0) || 0;
+  };
+
+  const calculateFinalAllocation = (account) => {
+    if (!account) return 0;
+    if (account.children && Array.isArray(account.children) && account.children.length > 0) {
+      return account.children.reduce(
+        (sum, child) => sum + calculateFinalAllocation(child),
+        0
+      );
+    }
+    return getLeafInitialUsd(account);
   };
 
   const calculateFinalAllocationTotal = (accountsList, type) => {
-    let totalAllocation = 0;
     if (type === 'AFF') {
-      const relevantAccounts = accountsList.filter((acc) =>
-        ['A3', 'A2', 'L4', 'L5', 'L6', 'L2', 'L3'].includes(acc.accountPlan?.finalAllocationType)
-      );
-      relevantAccounts.forEach((accountItem) => {
-        totalAllocation += (accountItem.children || []).reduce((acc, child) => {
-          return acc + calculateFinalAllocation(child);
-        }, 0);
-      });
-    } else if (type === 'AFC') {
-      const relevantAccounts = accountsList.filter((acc) =>
-        ['L7', 'L8', 'L9'].includes(acc.accountPlan?.finalAllocationType)
-      );
-      relevantAccounts.forEach((accountItem) => {
-        totalAllocation += (accountItem.children || []).reduce((acc, child) => {
-          return acc + calculateFinalAllocation(child);
-        }, 0);
-      });
-    } else {
-      totalAllocation += accountsList.finalAllocation || 0;
+      return organizedAccounts
+        .filter((acc) =>
+          String(acc.accountPlan?.number || acc.accountPlanNumber || '').startsWith('1.')
+        )
+        .reduce((sum, root) => sum + calculateFinalAllocation(root), 0);
     }
-    return totalAllocation;
+    if (type === 'AFC') {
+      return organizedAccounts
+        .filter((acc) =>
+          String(acc.accountPlan?.number || acc.accountPlanNumber || '').startsWith('2.')
+        )
+        .reduce((sum, root) => sum + calculateFinalAllocation(root), 0);
+    }
+    return calculateFinalAllocation(accountsList);
   };
 
   const totalCurrentExpenses = calculateFinalAllocationTotal(accounts, 'AFF');

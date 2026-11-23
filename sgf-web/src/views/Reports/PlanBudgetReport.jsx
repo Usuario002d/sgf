@@ -1796,206 +1796,40 @@ const PlanBudgetReport = () => {
   const organizedAccounts = organizeAccounts(accounts);
   const organizedAccountsInitial = organizeAccounts(accountsInitial);
 
-  const calculateFinalAllocation = (account) => {
-    let totalAllocation = 0;
-    const finalAllocationType = account.accountPlan.finalAllocationType;
-
-    const initialAllocationEntry = account.entriesEntry?.find(entry => entry.type === "initial_allocation");
-    const initialAllocation = initialAllocationEntry ? initialAllocationEntry.allocation : 0;
-
-    console.log(`Final Allocation Type: ${finalAllocationType}`); // Para depurar
-
-    // Se for uma conta do tipo L ou qualquer tipo L1 a L9, soma os filhos dessa conta
-    if (['L', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9'].includes(finalAllocationType)) {
-      totalAllocation += calculateChildrenAllocation(account); // Somar alocações das contas filhas
+  const getLeafInitialUsd = (account) => {
+    const initialAllocationEntry = account.entriesEntry?.find(
+      (entry) => entry.type === "initial_allocation"
+    );
+    if (
+      initialAllocationEntry &&
+      initialAllocationEntry.allocation !== undefined &&
+      initialAllocationEntry.allocation !== null
+    ) {
+      return Number(initialAllocationEntry.allocation) || 0;
     }
-    else if (finalAllocationType === 'A') {
-      totalAllocation = totalCurrentExpenses;
-    }
-    else if (finalAllocationType === 'L4') {
-      totalAllocation = avalueL4;
-
-    } else if (finalAllocationType === 'A1') {
-      totalAllocation = avalueA1
-    } else if (finalAllocationType === 'A2') {
-      if (valuesAccounts.length >= 1) {
-        totalAllocation = valuesAccounts[0].total_allocation;
-        console.log("dados a usar nos calculos", valuesAccounts)
-      } else {
-        console.log("O array valuesAccounts não possui 1 elemento.");
-        totalAllocation = 0; // Ou outro valor adequado
-      }
-    } else if (finalAllocationType === 'A3') {
-      totalAllocation += calculateChildrenAllocationA2(account);
-    } else if (finalAllocationType === 'A4') {
-      // Encontrar as contas L2 e L3 (isso depende da sua estrutura de dados)
-      const l2Account = accounts.find(acc => acc.accountPlan.finalAllocationType === 'L2');
-      const l3Account = accounts.find(acc => acc.accountPlan.finalAllocationType === 'L3');
-
-      // Calcular a alocação de cada uma
-      const l2Allocation = l2Account ? calculateChildrenAllocation(l2Account) : 0;
-      const l3Allocation = l3Account ? calculateChildrenAllocation(l3Account) : 0;
-
-      totalAllocation = l2Allocation + l3Allocation;
-    } else if (finalAllocationType === 'A5') {
-      totalAllocation = avalueA5;
-    } else if (finalAllocationType === 'A7' || finalAllocationType === 'A8') {
-      totalAllocation = avalueA7;
-    } else if (finalAllocationType === 'A8') {
-      totalAllocation = avalueA8;
-    } else {
-      totalAllocation += initialAllocation || 0;
-    }
-    console.log(`Total Allocation after final check: ${totalAllocation}`); // Para depurar
-    return totalAllocation;
+    return Number(account.initialAllocation ?? account.finalAllocation ?? 0) || 0;
   };
 
+  const calculateFinalAllocation = (account) => {
+    if (!account) return 0;
+    if (account.children && Array.isArray(account.children) && account.children.length > 0) {
+      return account.children.reduce(
+        (sum, child) => sum + calculateFinalAllocation(child),
+        0
+      );
+    }
+    return getLeafInitialUsd(account);
+  };
 
   const calculateFinalAllocationDinamic = (account) => {
-    let totalAllocation = 0;
-    const finalAllocationType = account.accountPlan.finalAllocationType;
-
-    if (finalAllocationType === 'A') {
-      const allocationTypes = ['L', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
+    if (!account) return 0;
+    if (account.children && Array.isArray(account.children) && account.children.length > 0) {
+      return account.children.reduce(
+        (sum, child) => sum + calculateFinalAllocationDinamic(child),
+        0
+      );
     }
-    else if (finalAllocationType === 'L') {
-      const allocationTypes = ['L'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
-    }
-    else if (finalAllocationType === 'L3') {
-      totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-    }
-    else if (finalAllocationType === 'L2') {
-      totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-    } else if (finalAllocationType === 'A1') {
-      const allocationTypes = ['L', 'L1'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
-    }
-    else if (finalAllocationType === 'A2') {
-      const allocationTypes = ['L'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
-    } else if (finalAllocationType === 'A3') {
-      const allocationTypes = ['L1'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
-    }
-    else if (finalAllocationType === 'L1') {
-      const allocationTypes = ['L1'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-          // totalAllocation += parseFloat(calculateChildrenAllocationFinallAlocation(account)).toFixed(2);
-        }
-      });
-    }
-    else if (finalAllocationType === 'A4') {
-      const allocationTypes = ['L2', 'L3'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
-    }
-    else if (finalAllocationType === 'L4') {
-      const allocationTypes = ['L4'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
-    }
-    else if (finalAllocationType === 'L5') {
-      const allocationTypes = ['L5'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
-    }
-    else if (finalAllocationType === 'L6') {
-      const allocationTypes = ['L6'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
-    }
-    else if (finalAllocationType === 'A5') {
-      const allocationTypes = ['L5', 'L6'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
-    } else if (finalAllocationType === 'A7') {
-      const allocationTypes = ['L7', 'L8', 'L9'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
-    }
-    else if (finalAllocationType === 'L8') {
-      const allocationTypes = ['L8'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
-    }
-    else if (finalAllocationType === 'L9') {
-      const allocationTypes = ['L9'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
-    } else if (finalAllocationType === 'A8') {
-      const allocationTypes = ['L7', 'L8', 'L9'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
-    } else {
-      totalAllocation += account.finalAllocation || 0;
-    }
-    return totalAllocation;
+    return Number(account.finalAllocation || 0) || 0;
   };
 
 
@@ -2211,70 +2045,39 @@ const PlanBudgetReport = () => {
   };
 
   const calculateFinalAllocationTotal = (account, type) => {
-    let totalAllocation = 0;
-
     if (type === 'AFF') {
-      // Soma as alocações das contas A3, A2, L4, L5, L6, L2, L3, incluindo suas filhas
-      const relevantAccounts = accounts.filter(acc =>
-        ['A3', 'A2', 'L4', 'L5', 'L6', 'L2', 'L3'].includes(acc.accountPlan.finalAllocationType)
-      );
-
-      // Soma as alocações diretas e das filhas das contas relevantes
-      relevantAccounts.forEach(accountItem => {
-        totalAllocation += accountItem.children.reduce((acc, child) => {
-          return acc + calculateFinalAllocation(child); // Soma recursiva das alocações das contas filhas
-        }, 0);
-      });
-
-    } else if (type === 'AFC') {
-      // Soma as alocações das contas L7, L8, L9, incluindo suas filhas
-      const relevantAccounts = accounts.filter(acc =>
-        ['L7', 'L8', 'L9'].includes(acc.accountPlan.finalAllocationType)
-      );
-
-      // Soma as alocações diretas e das filhas das contas relevantes
-      relevantAccounts.forEach(accountItem => {
-        totalAllocation += accountItem.children.reduce((acc, child) => {
-          return acc + calculateFinalAllocation(child); // Soma recursiva das alocações das contas filhas
-        }, 0);
-      });
-
-    } else {
-      // Caso padrão para outros tipos, soma o valor direto da conta
-      totalAllocation += account.finalAllocation || 0;
+      return organizedAccounts
+        .filter((acc) =>
+          String(acc.accountPlan?.number || acc.accountPlanNumber || '').startsWith('1.')
+        )
+        .reduce((sum, root) => sum + calculateFinalAllocation(root), 0);
     }
-
-    return totalAllocation;
+    if (type === 'AFC') {
+      return organizedAccounts
+        .filter((acc) =>
+          String(acc.accountPlan?.number || acc.accountPlanNumber || '').startsWith('2.')
+        )
+        .reduce((sum, root) => sum + calculateFinalAllocation(root), 0);
+    }
+    return calculateFinalAllocation(account);
   };
 
-
   const calculateFinalAllocationTotal2 = (account, type) => {
-    let totalAllocation = 0;
-
     if (type === 'AFF') {
-      const allocationTypes = ['L', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
-
-    } else if (type === 'AFC') {
-      const allocationTypes = ['L7', 'L8', 'L9'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
-
-    } else {
-      // Caso padrão para outros tipos, soma o valor direto da conta
-      totalAllocation += account.finalAllocation || 0;
+      return organizedAccounts
+        .filter((acc) =>
+          String(acc.accountPlan?.number || acc.accountPlanNumber || '').startsWith('1.')
+        )
+        .reduce((sum, root) => sum + calculateFinalAllocationDinamic(root), 0);
     }
-
-    return totalAllocation;
+    if (type === 'AFC') {
+      return organizedAccounts
+        .filter((acc) =>
+          String(acc.accountPlan?.number || acc.accountPlanNumber || '').startsWith('2.')
+        )
+        .reduce((sum, root) => sum + calculateFinalAllocationDinamic(root), 0);
+    }
+    return calculateFinalAllocationDinamic(account);
   };
 
   const totalCurrentExpenses = calculateFinalAllocationTotal(accounts, "AFF");

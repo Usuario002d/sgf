@@ -260,10 +260,12 @@ export default class AccountPlanBudjectService {
       .where('account_plan_year_id', active.id)
       .update({
         final_allocation: 0,
-        initial_allocation: 0
+        initial_allocation: 0,
+        available_allocation: 0
       });
 
     await query;
+    await this.accountPlanEntryService.recalculateParentEntriesForYear(active.id);
   }
 
   async clearAllInitialAllocations(year?: number) {
