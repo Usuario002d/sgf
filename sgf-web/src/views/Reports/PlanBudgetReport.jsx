@@ -597,13 +597,7 @@ const PlanBudgetReport = () => {
       formatNumber(annulment1 * 2.5),
       formatNumber(increase1 * 2.5),
       formatNumber(decrease1 * 2.5),
-      formatNumber(
-        totalMzn +
-        inscription1 * 2.5 -
-        annulment1 * 2.5 +
-        increase1 * 2.5 -
-        decrease1 * 2.5
-      )
+      formatNumber(totalCurrentExpensesDisponivel * 2.5)
     ];
 
     const totalRow2 = [
@@ -613,13 +607,7 @@ const PlanBudgetReport = () => {
       formatNumber(annulment112 * 2.5),
       formatNumber(increase112 * 2.5),
       formatNumber(decrease112 * 2.5),
-      formatNumber(
-        totalMznDespesas +
-        inscription112 * 2.5 -
-        annulment112 * 2.5 +
-        increase112 * 2.5 -
-        decrease112 * 2.5
-      )
+      formatNumber(totalCapitalExpensesDisponivel * 2.5)
     ];
 
     const totalRow3 = [
@@ -629,13 +617,7 @@ const PlanBudgetReport = () => {
       formatNumber(annulment112F * 2.5),
       formatNumber(increase112F * 2.5),
       formatNumber(decrease112F * 2.5),
-      formatNumber(
-        totalMznF +
-        inscription112F * 2.5 -
-        annulment112F * 2.5 +
-        increase112F * 2.5 -
-        decrease112F * 2.5
-      )
+      formatNumber(totalGlobalBudget2 * 2.5)
     ];
 
     // Corpo completo com os totais no final
@@ -1304,10 +1286,10 @@ const PlanBudgetReport = () => {
       });
     };
 
-    // Adicionar totais de despesas correntes, despesas de capital e orçamento global
-    const totalCorrente = totalMzn + inscription1 * 2.5 - annulment1 * 2.5 + increase1 * 2.5 - decrease1 * 2.5;
-    const totalCapital = totalMznDespesas + inscription112 * 2.5 - annulment112 * 2.5 + increase112 - decrease112;
-    const totalGlobal = totalMznF + inscription112F * 2.5 - annulment112F * 2.5 + increase112F * 2.5 - decrease112F * 2.5;
+    // Adicionar totais de despesas correntes, despesas de capital e orçamento global (unificados com Dotação Disponível)
+    const totalCorrente = totalCurrentExpensesDisponivel * 2.5;
+    const totalCapital = totalCapitalExpensesDisponivel * 2.5;
+    const totalGlobal = totalGlobalBudget2 * 2.5;
 
     addTotalRow(
       '',
@@ -2167,111 +2149,66 @@ const PlanBudgetReport = () => {
     }
   });
 
-  // Acessando os valores corretamente
-  const inscription1 = fixedValues11["1.1.1.1_1.2.1.0"].inscription;
-  const annulment1 = fixedValues11["1.1.1.1_1.2.1.0"].annulment;
-  const increase1 = fixedValues11["1.1.1.1_1.2.1.0"].increase;
-  const decrease1 = fixedValues11["1.1.1.1_1.2.1.0"].decrease;
+  // Função unificada para corresponder tipos de movimento (incluindo ambas grafias de redistribuição)
+  const matchEntryType = (entryType, targetType) => {
+    if (entryType === targetType) return true;
+    if (targetType === "redistribuition_reinforcement" && entryType === "redistribution_reinforcement") return true;
+    if (targetType === "redistribuition_annulment" && entryType === "redistribution_annulment") return true;
+    return false;
+  };
 
-  const inscription11 = fixedValues111["1.1.0.0.00"].inscription;
-  const annulment11 = fixedValues111["1.1.0.0.00"].annulment;
-  const increase11 = fixedValues111["1.1.0.0.00"].increase;
-  const decrease11 = fixedValues111["1.1.0.0.00"].decrease;
-
-  const inscription16 = fixedValues116["1.6.0.0.00"].inscription;
-  const annulment16 = fixedValues116["1.6.0.0.00"].annulment;
-  const increase16 = fixedValues116["1.6.0.0.00"].increase;
-  const decrease16 = fixedValues116["1.6.0.0.00"].decrease;
-
-  const inscription112 = fixedValues1112["1.1.2.0.00"].inscription;
-  const annulment112 = fixedValues1112["1.1.2.0.00"].annulment;
-  const increase112 = fixedValues1112["1.1.2.0.00"].increase;
-  const decrease112 = fixedValues1112["1.1.2.0.00"].decrease;
-
-  const inscription112F = fixedValues1112F["1.1.2.F.00"].inscription;
-  const annulment112F = fixedValues1112F["1.1.2.F.00"].annulment;
-  const increase112F = fixedValues1112F["1.1.2.F.00"].increase;
-  const decrease112F = fixedValues1112F["1.1.2.F.00"].decrease;
-
-  // Imprimindo os valores nos logs
-  console.log("Inscription:", inscription1);
-  console.log("Annulment:", annulment1);
-  console.log("Increase:", increase1);
-  console.log("Decrease:", decrease1);
-
-  console.log("Inscription11:", inscription11);
-  console.log("Annulment11:", annulment11);
-  console.log("Increase11:", increase11);
-  console.log("Decrease11:", decrease11);
-
-  console.log("Dados Finais OK", fixedValues11)
-
-
-  // Função para calcular os valores hierárquicos
+  // Função para calcular os valores hierárquicos a partir das contas de movimento (folhas)
   const calculateHierarchicalAllocations = (account, type) => {
+    if (!account) return 0;
+    if (account.children && account.children.length > 0) {
+      return account.children.reduce(
+        (sum, childAccount) => sum + calculateHierarchicalAllocations(childAccount, type),
+        0
+      );
+    }
     let allocation = 0;
-
-    // Soma a alocação da conta atual
-    account.entriesEntry.forEach((entry) => {
-      if (entry.type === type) {
-        allocation += entry.allocation || 0;
+    (account.entriesEntry || []).forEach((entry) => {
+      if (matchEntryType(entry.type, type)) {
+        allocation += Number(entry.allocation || 0);
       }
     });
-
-    // Soma as alocações dos filhos de forma recursiva
-    if (account.children && account.children.length > 0) {
-      account.children.forEach((childAccount) => {
-        allocation += calculateHierarchicalAllocations(childAccount, type);
-      });
-    }
-
     return allocation;
   };
 
+  const sumGroupAllocations = (prefix, type) =>
+    organizedAccounts
+      .filter((acc) => String(acc.accountPlan?.number || acc.accountPlanNumber || '').startsWith(prefix))
+      .reduce((sum, root) => sum + calculateHierarchicalAllocations(root, type), 0);
+
+  // Totais das alterações calculados diretamente da árvore hierárquica (1.* Correntes, 2.* Capital, Global)
+  const inscription1 = sumGroupAllocations('1.', 'reinforcement');
+  const annulment1 = sumGroupAllocations('1.', 'annulment');
+  const increase1 = sumGroupAllocations('1.', 'redistribuition_reinforcement');
+  const decrease1 = sumGroupAllocations('1.', 'redistribuition_annulment');
+
+  const inscription112 = sumGroupAllocations('2.', 'reinforcement');
+  const annulment112 = sumGroupAllocations('2.', 'annulment');
+  const increase112 = sumGroupAllocations('2.', 'redistribuition_reinforcement');
+  const decrease112 = sumGroupAllocations('2.', 'redistribuition_annulment');
+
+  const inscription112F = inscription1 + inscription112;
+  const annulment112F = annulment1 + annulment112;
+  const increase112F = increase1 + increase112;
+  const decrease112F = decrease1 + decrease112;
 
   const renderAccountRowsReport = (account, level = 0) => {
     const indentation = '\u00A0'.repeat(level * 2);
     const isParentAccount = account.children && account.children.length > 0;
-    
-    // Obter valores dos movimentos
-    let inscription, annulment, increase, decrease;
-    
-    if (account.accountPlan.number === "1.0.0.0.00") {
-      inscription = inscription1;
-      annulment = annulment1;
-      increase = increase1;
-      decrease = decrease1;
-    } else if (account.accountPlan.number === "1.1.0.0.00") {
-      inscription = inscription11;
-      annulment = annulment11;
-      increase = increase11;
-      decrease = decrease11;
-    } else if (account.accountPlan.number === "1.6.0.0.00") {
-      inscription = inscription16;
-      annulment = annulment16;
-      increase = increase16;
-      decrease = decrease16;
-    } else {
-      inscription = account.simulatedValues?.inscription || calculateHierarchicalAllocations(account, "reinforcement");
-      annulment = account.simulatedValues?.annulment || calculateHierarchicalAllocations(account, "annulment");
-      increase = account.simulatedValues?.increase || calculateHierarchicalAllocations(account, "redistribuition_reinforcement");
-      decrease = account.simulatedValues?.decrease || calculateHierarchicalAllocations(account, "redistribuition_annulment");
-    }
 
-    // Calcular dotação final
+    // Obter valores dos movimentos diretamente da hierarquia real da conta
+    const inscription = account.simulatedValues?.inscription || calculateHierarchicalAllocations(account, "reinforcement");
+    const annulment = account.simulatedValues?.annulment || calculateHierarchicalAllocations(account, "annulment");
+    const increase = account.simulatedValues?.increase || calculateHierarchicalAllocations(account, "redistribuition_reinforcement");
+    const decrease = account.simulatedValues?.decrease || calculateHierarchicalAllocations(account, "redistribuition_annulment");
+
+    // Dotação Inicial (Tabela de Despesas) e Dotação Final unificada com o relatório de Dotação Disponível
     const finalAllocation = calculateFinalAllocationA(account);
-    let dotacaoFinal = ((finalAllocation + (inscription + increase) - (annulment + decrease)) * 2.5);
-
-    if (account.accountPlan.number === '1.1.0.0.00') {
-      const multiplicador = 2.5;
-      const finalAllocationMultiplicada = finalAllocation * multiplicador;
-      const inscriptionMultiplicada = inscription * multiplicador;
-      const increaseMultiplicada = increase * multiplicador;
-      const annulmentMultiplicada = annulment * multiplicador;
-      const decreaseMultiplicada = decrease * multiplicador;
-
-      dotacaoFinal = finalAllocationMultiplicada + inscriptionMultiplicada + increaseMultiplicada - (annulmentMultiplicada + decreaseMultiplicada);
-    }
+    const dotacaoFinal = calculateFinalAllocationDinamic(account) * 2.5;
 
     totalContraValor = finalAllocation * exchangeRate;
 
@@ -2412,7 +2349,7 @@ const PlanBudgetReport = () => {
     switch (selectedReport) {
       case "Tabela de Despesas":
         return (
-          <div className="premium-container">
+          <div key="tabela-despesas" className="premium-container">
             {/* Enhanced Button Group with Premium Styling */}
 
             <div style={styles.container}>
@@ -2574,7 +2511,7 @@ const PlanBudgetReport = () => {
 
       case "Extrato":
         return (
-          <div>
+          <div key="extrato">
 
             <div style={{
               display: 'flex',
@@ -2992,7 +2929,7 @@ const PlanBudgetReport = () => {
         );
       case "Mapa de Alterações da Tabela de Despesas":
         return (
-          <div className="premium-container">
+          <div key="mapa-alteracoes" className="premium-container">
             {/* Enhanced Button Group with Premium Styling */}
             <div style={styles.container}>
 
@@ -3247,11 +3184,13 @@ const PlanBudgetReport = () => {
             </div>
 
             <div style={{
-              marginTop: "10px",
-              display: "flex",
-              gap: "12px",
-              justifyContent: "space-between",
-              alignItems: "stretch",
+              marginTop: "16px",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+              gap: "16px",
+              padding: "16px",
+              width: "100%",
+              background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
               borderRadius: "10px",
               boxShadow: "0 4px 20px rgba(0,0,0,0.3)"
             }}>
@@ -3267,7 +3206,7 @@ const PlanBudgetReport = () => {
                     { label: "Redistribuição (Diminuição) (MZN)", value: decrease1 * 2.5 },
                     {
                       label: "Dotação Final (MZN)",
-                      value: (totalMzn) + (inscription1 * 2.5) - (annulment1 * 2.5) + (increase1 * 2.5) - (decrease1 * 2.5),
+                      value: totalCurrentExpensesDisponivel * 2.5,
                       highlight: true
                     }
                   ]
@@ -3283,7 +3222,7 @@ const PlanBudgetReport = () => {
                     { label: "Redistribuição (Diminuição) (MZN)", value: decrease112 * 2.5 },
                     {
                       label: "Dotação Final (MZN)",
-                      value: (totalMznDespesas) + (inscription112 * 2.5) - (annulment112 * 2.5) + (increase112 * 2.5) - (decrease112 * 2.5),
+                      value: totalCapitalExpensesDisponivel * 2.5,
                       highlight: true
                     }
                   ]
@@ -3299,7 +3238,7 @@ const PlanBudgetReport = () => {
                     { label: "Redistribuição (Diminuição) (MZN)", value: decrease112F * 2.5 },
                     {
                       label: "Dotação Final (MZN)",
-                      value: (totalMznF) + (inscription112F * 2.5) - (annulment112F * 2.5) + (increase112F * 2.5) - (decrease112F * 2.5),
+                      value: totalGlobalBudget2 * 2.5,
                       highlight: true
                     }
                   ]
@@ -3365,7 +3304,7 @@ const PlanBudgetReport = () => {
 
       case "Dotação Disponível":
         return (
-          <div>
+          <div key="dotacao-disponivel">
             {/* Contêiner flexível para organizar o botão e o campo de busca */}
             <div className="row" style={{
               display: 'flex',
@@ -3500,12 +3439,12 @@ const PlanBudgetReport = () => {
             </div>
 
             <div style={{
-              marginTop: "10px",
-              display: "flex",
-              gap: "12px",
-              padding: "12px",
-              justifyContent: "space-between",
-              alignItems: "stretch",
+              marginTop: "16px",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+              gap: "16px",
+              padding: "16px",
+              width: "100%",
               background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
               borderRadius: "10px",
               boxShadow: "0 4px 20px rgba(0,0,0,0.3)"
