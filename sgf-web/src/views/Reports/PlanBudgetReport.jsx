@@ -1807,7 +1807,7 @@ const PlanBudgetReport = () => {
     ) {
       return Number(initialAllocationEntry.allocation) || 0;
     }
-    return Number(account.initialAllocation ?? account.finalAllocation ?? 0) || 0;
+    return Number(account.initialAllocation ?? 0) || 0;
   };
 
   const calculateFinalAllocation = (account) => {
@@ -1871,103 +1871,8 @@ const PlanBudgetReport = () => {
     });
   };
 
-  const calculateFinalAllocationA = (account) => {
-    let totalAllocation = 0;
-    const finalAllocationType = account.accountPlan.finalAllocationType;
-
-    const initialAllocationEntry = account.entriesEntry?.find(entry => entry.type === "initial_allocation");
-    const initialAllocation = initialAllocationEntry ? initialAllocationEntry.allocation : 0;
-
-    console.log(`Final Allocation Type: ${finalAllocationType}`); // Para depurar
-
-    // Se for uma conta do tipo L ou qualquer tipo L1 a L9, soma os filhos dessa conta
-    if (['L', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9'].includes(finalAllocationType)) {
-      totalAllocation += calculateChildrenAllocation(account); // Somar alocações das contas filhas
-    } else if (finalAllocationType === 'A') {
-      // Verificação para garantir que o array valuesAccounts tenha pelo menos 7 elementos
-      const allocationTypes = ['L', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += parseFloat(calculateChildrenAllocationFinallAlocation(account).toFixed(2));
-        }
-      });
-      // if (valuesAccounts.length >= 7) {
-      //   totalAllocation = valuesAccounts[0].total_allocation + valuesAccounts[1].total_allocation +
-      //     valuesAccounts[2].total_allocation + valuesAccounts[3].total_allocation +
-      //     valuesAccounts[4].total_allocation + valuesAccounts[5].total_allocation +
-      //     valuesAccounts[6].total_allocation;
-      // } else {
-      //   console.log("O array valuesAccounts não possui 7 elementos.");
-      //   totalAllocation = 0; // Ou outro valor adequado
-      // }
-    } else if (finalAllocationType === 'A1') {
-      // Verificação para garantir que o array valuesAccounts tenha pelo menos 2 elementos
-      // if (valuesAccounts.length >= 2) {
-      //   const value1 = valuesAccounts[0].total_allocation;
-      //   const value2 = valuesAccounts[1].total_allocation;
-      //   totalAllocation = value1 + value2;
-
-      //   console.log(`Valores individuais de A1: ${value1} + ${value2}`);
-      //   console.log(`Total alocado para A1: ${totalAllocation}`);
-      // } else {
-      //   console.log("O array valuesAccounts não possui 2 elementos.");
-      //   totalAllocation = 0; // Ou outro valor adequado
-      // }
-      const allocationTypes = ['L', 'L1'];
-      allocationTypes.forEach(type => {
-        const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-        if (account) {
-          totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-        }
-      });
-    }
-    else if (finalAllocationType === 'A2') {
-      // Verificação para garantir que o array valuesAccounts tenha pelo menos 1 elemento
-      if (valuesAccounts.length >= 1) {
-        totalAllocation = valuesAccounts[0].total_allocation;
-      } else {
-        console.log("O array valuesAccounts não possui 1 elemento.");
-        totalAllocation = 0; // Ou outro valor adequado
-      }
-    } else if (finalAllocationType === 'A3') {
-      totalAllocation += calculateChildrenAllocationA2(account);
-    } else if (finalAllocationType === 'A4') {
-      // Verificação para garantir que o array valuesAccounts tenha pelo menos 4 elementos
-      if (valuesAccounts.length >= 4) {
-        totalAllocation = valuesAccounts[2].total_allocation + valuesAccounts[3].total_allocation;
-      } else {
-        console.log("O array valuesAccounts não possui 4 elementos.");
-        totalAllocation = 0; // Ou outro valor adequado
-      }
-    } else if (finalAllocationType === 'A5') {
-      // Verificação para garantir que o array valuesAccounts tenha pelo menos 6 elementos
-      if (valuesAccounts.length >= 6) {
-        totalAllocation = valuesAccounts[5].total_allocation + valuesAccounts[6].total_allocation;
-      } else {
-        console.log("O array valuesAccounts não possui 6 elementos.");
-        totalAllocation = 0; // Ou outro valor adequado
-      }
-    } else if (finalAllocationType === 'A7' || finalAllocationType === 'A8') {
-      // Verificação para garantir que o array valuesAccounts tenha pelo menos 8 elementos
-      if (valuesAccounts.length >= 8) {
-        totalAllocation =
-          valuesAccounts[valuesAccounts.length - 1].total_allocation +
-          valuesAccounts[valuesAccounts.length - 2].total_allocation +
-          valuesAccounts[valuesAccounts.length - 3].total_allocation;
-
-      } else {
-        console.log("O array valuesAccounts não possui 8 elementos.");
-        totalAllocation = 0; // Ou outro valor adequado
-      }
-    } else {
-      // Para outras contas que não são do tipo L ou A2, soma a alocação inicial
-      totalAllocation += initialAllocation || 0;
-    }
-
-    console.log(`Total Allocation after final check: ${totalAllocation}`); // Para depurar
-    return totalAllocation;
-  };
+  // Dotação Inicial (USD) sempre baseada na Tabela de Despesas (imutável após alterações)
+  const calculateFinalAllocationA = (account) => calculateFinalAllocation(account);
 
   const calculateChildrenAllocationA2 = (account) => {
     let total = 0;
@@ -2095,19 +2000,16 @@ const PlanBudgetReport = () => {
   const totalGlobalContraValor = totalGlobalBudget * 2.5;
   const totalGlobalDuodecimo = totalGlobalContraValor / 12;
   const totalGlobalBudgetDuedecimo = totalGlobalBudget / 12;
-  const totalCurrentContraValorData = valuesAccounts
-    .slice(0, 7) // Garante que apenas os 7 primeiros elementos sejam usados
-    .reduce((sum, account) => sum + (account.total_allocation || 0), 0);
-  const totalMzn = totalCurrentContraValorData * 2.5;
-  const totalDuedecimoData = totalMzn / 12;
-  const totalCurrentContraValorDataDespesas = valuesAccounts
-    .slice(7) // Garante que apenas os 7 primeiros elementos sejam usados
-    .reduce((sum, account) => sum + (account.total_allocation || 0), 0);
-  const totalMznDespesas = totalCurrentContraValorDataDespesas * 2.5;
-  const totalDuedecimoDataDespesas = totalMznDespesas / 12;
-  const total = totalCurrentContraValorData + totalCurrentContraValorDataDespesas;
-  const totalMznF = total * 2.5;
-  const totalDuedecimoF = totalMznF / 12;
+  // Totais da Dotação Inicial unificados com a Tabela de Despesas (imutáveis perante alterações)
+  const totalCurrentContraValorData = totalCurrentExpenses;
+  const totalMzn = totalCurrentContraValor;
+  const totalDuedecimoData = totalCurrentDuodecimo;
+  const totalCurrentContraValorDataDespesas = totalCapitalExpenses;
+  const totalMznDespesas = totalCapitalContraValor;
+  const totalDuedecimoDataDespesas = totalCapitalDuodecimo;
+  const total = totalGlobalBudget;
+  const totalMznF = totalGlobalContraValor;
+  const totalDuedecimoF = totalGlobalDuodecimo;
 
 
 
@@ -2598,8 +2500,8 @@ const PlanBudgetReport = () => {
                   </tr>
                   <tr>
                     <th>USD</th>
-                    <th>Contra Valor</th>
-                    <th>Contra Valor</th>
+                    <th>Contra Valor (MZN)</th>
+                    <th>Contra Valor (MZN)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2615,15 +2517,15 @@ const PlanBudgetReport = () => {
                 <h3 className="premium-card-title">Total de Despesas Correntes</h3>
                 <div className="premium-card-content">
                   <div className="premium-card-row">
-                    <span>Contravalor:</span>
+                    <span>Contravalor (MZN):</span>
                     <strong>{formatNumber(totalCurrentContraValor)}</strong>
                   </div>
                   <div className="premium-card-row">
-                    <span>Duodécimo:</span>
+                    <span>Duodécimo (MZN):</span>
                     <strong>{formatNumber(totalCurrentDuodecimo)}</strong>
                   </div>
                   <div className="premium-card-row total-row">
-                    <span>Total:</span>
+                    <span>Total (USD):</span>
                     <strong>{formatNumber(totalCurrentExpenses)}</strong>
                   </div>
                 </div>
@@ -2634,15 +2536,15 @@ const PlanBudgetReport = () => {
                 <h3 className="premium-card-title">Total de Despesas de Capital</h3>
                 <div className="premium-card-content">
                   <div className="premium-card-row">
-                    <span>Contravalor:</span>
+                    <span>Contravalor (MZN):</span>
                     <strong>{formatNumber(totalCapitalContraValor)}</strong>
                   </div>
                   <div className="premium-card-row">
-                    <span>Duodécimo:</span>
+                    <span>Duodécimo (MZN):</span>
                     <strong>{formatNumber(totalCapitalDuodecimo)}</strong>
                   </div>
                   <div className="premium-card-row total-row">
-                    <span>Total:</span>
+                    <span>Total (USD):</span>
                     <strong>{formatNumber(totalCapitalExpenses)}</strong>
                   </div>
                 </div>
@@ -2653,15 +2555,15 @@ const PlanBudgetReport = () => {
                 <h3 className="premium-card-title">Total Orçamento Global</h3>
                 <div className="premium-card-content">
                   <div className="premium-card-row">
-                    <span>Contravalor:</span>
+                    <span>Contravalor (MZN):</span>
                     <strong>{formatNumber(totalGlobalContraValor)}</strong>
                   </div>
                   <div className="premium-card-row">
-                    <span>Duodécimo:</span>
+                    <span>Duodécimo (MZN):</span>
                     <strong>{formatNumber(totalGlobalDuodecimo)}</strong>
                   </div>
                   <div className="premium-card-row total-row">
-                    <span>Total:</span>
+                    <span>Total (USD):</span>
                     <strong>{formatNumber(totalGlobalBudget)}</strong>
                   </div>
                 </div>
@@ -3358,13 +3260,13 @@ const PlanBudgetReport = () => {
                   title: "Total de Despesas Correntes",
                   color: "#00d2ff", // Azul neon
                   items: [
-                    { label: "Dotação Inicial", value: totalMzn },
-                    { label: "Inscrição/Reforço", value: inscription1 * 2.5 },
-                    { label: "Anulação/Redução", value: annulment1 * 2.5 },
-                    { label: "Redistribuição(Aumento)", value: increase1 * 2.5 },
-                    { label: "Redistribuição(Diminuição)", value: decrease1 * 2.5 },
+                    { label: "Dotação Inicial (MZN)", value: totalMzn },
+                    { label: "Inscrição/Reforço (MZN)", value: inscription1 * 2.5 },
+                    { label: "Anulação/Redução (MZN)", value: annulment1 * 2.5 },
+                    { label: "Redistribuição (Aumento) (MZN)", value: increase1 * 2.5 },
+                    { label: "Redistribuição (Diminuição) (MZN)", value: decrease1 * 2.5 },
                     {
-                      label: "Dotação Final",
+                      label: "Dotação Final (MZN)",
                       value: (totalMzn) + (inscription1 * 2.5) - (annulment1 * 2.5) + (increase1 * 2.5) - (decrease1 * 2.5),
                       highlight: true
                     }
@@ -3374,13 +3276,13 @@ const PlanBudgetReport = () => {
                   title: "Total de Despesas de Capital",
                   color: "#ff6b6b", // Vermelho coral
                   items: [
-                    { label: "Contravalor", value: totalMznDespesas },
-                    { label: "Inscrição/Reforço", value: inscription112 * 2.5 },
-                    { label: "Anulação/Redução", value: annulment112 * 2.5 },
-                    { label: "Redistribuição(Aumento)", value: increase112 * 2.5 },
-                    { label: "Redistribuição(Diminuição)", value: decrease112 * 2.5 },
+                    { label: "Dotação Inicial (MZN)", value: totalMznDespesas },
+                    { label: "Inscrição/Reforço (MZN)", value: inscription112 * 2.5 },
+                    { label: "Anulação/Redução (MZN)", value: annulment112 * 2.5 },
+                    { label: "Redistribuição (Aumento) (MZN)", value: increase112 * 2.5 },
+                    { label: "Redistribuição (Diminuição) (MZN)", value: decrease112 * 2.5 },
                     {
-                      label: "Dotação Final",
+                      label: "Dotação Final (MZN)",
                       value: (totalMznDespesas) + (inscription112 * 2.5) - (annulment112 * 2.5) + (increase112 * 2.5) - (decrease112 * 2.5),
                       highlight: true
                     }
@@ -3390,13 +3292,13 @@ const PlanBudgetReport = () => {
                   title: "Total Orçamento Global",
                   color: "#6bff6b", // Verde neon
                   items: [
-                    { label: "Contravalor", value: totalMznF },
-                    { label: "Inscrição/Reforço", value: inscription112F * 2.5 },
-                    { label: "Anulação/Redução", value: annulment112F * 2.5 },
-                    { label: "Redistribuição(Aumento)", value: Math.round(increase112F * 2.5 * 100) / 100 },
-                    { label: "Redistribuição(Diminuição)", value: decrease112F * 2.5 },
+                    { label: "Dotação Inicial (MZN)", value: totalMznF },
+                    { label: "Inscrição/Reforço (MZN)", value: inscription112F * 2.5 },
+                    { label: "Anulação/Redução (MZN)", value: annulment112F * 2.5 },
+                    { label: "Redistribuição (Aumento) (MZN)", value: Math.round(increase112F * 2.5 * 100) / 100 },
+                    { label: "Redistribuição (Diminuição) (MZN)", value: decrease112F * 2.5 },
                     {
-                      label: "Dotação Final",
+                      label: "Dotação Final (MZN)",
                       value: (totalMznF) + (inscription112F * 2.5) - (annulment112F * 2.5) + (increase112F * 2.5) - (decrease112F * 2.5),
                       highlight: true
                     }
@@ -3613,27 +3515,27 @@ const PlanBudgetReport = () => {
                   title: "Total de Despesas Correntes",
                   color: "#00d2ff", // Azul neon
                   items: [
-                    { label: "Dotação Inicial", value: totalMzn },
-                    { label: "Dotação Final", value: totalCurrentExpensesDisponivel * 2.5, highlight: true },
-                    { label: "Dotação Disponivel", value: (totalCurrentExpensesDisponivel * 2.5), highlight: true }
+                    { label: "Dotação Inicial (MZN)", value: totalMzn },
+                    { label: "Dotação Final (MZN)", value: totalCurrentExpensesDisponivel * 2.5, highlight: true },
+                    { label: "Dotação Disponível (MZN)", value: (totalCurrentExpensesDisponivel * 2.5), highlight: true }
                   ]
                 },
                 {
                   title: "Total de Despesas de Capital",
                   color: "#ff6b6b", // Vermelho coral
                   items: [
-                    { label: "Dotação Inicial", value: totalCurrentContraValorDataDespesas * 2.5 },
-                    { label: "Dotação Final", value: totalCapitalExpensesDisponivel * 2.5, highlight: true },
-                    { label: "Dotação Disponivel", value: (totalCapitalExpensesDisponivel * 2.5), highlight: true }
+                    { label: "Dotação Inicial (MZN)", value: totalCurrentContraValorDataDespesas * 2.5 },
+                    { label: "Dotação Final (MZN)", value: totalCapitalExpensesDisponivel * 2.5, highlight: true },
+                    { label: "Dotação Disponível (MZN)", value: (totalCapitalExpensesDisponivel * 2.5), highlight: true }
                   ]
                 },
                 {
                   title: "Total Orçamento Global",
                   color: "#6bff6b", // Verde neon
                   items: [
-                    { label: "Dotação Inicial", value: totalMzn + (totalCurrentContraValorDataDespesas * 2.5) },
-                    { label: "Dotação Final", value: totalGlobalBudget2 * 2.5, highlight: true },
-                    { label: "Dotação Disponivel", value: ((totalGlobalBudget2 * 2.5)), highlight: true }
+                    { label: "Dotação Inicial (MZN)", value: totalMzn + (totalCurrentContraValorDataDespesas * 2.5) },
+                    { label: "Dotação Final (MZN)", value: totalGlobalBudget2 * 2.5, highlight: true },
+                    { label: "Dotação Disponível (MZN)", value: ((totalGlobalBudget2 * 2.5)), highlight: true }
                   ]
                 }
               ].map((card, index) => (

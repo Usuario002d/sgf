@@ -2864,80 +2864,31 @@ const BudgetExecutionReports = () => {
         return totalAmountForAccount;
     };
 
-    const calculateFinalAllocationA = (account) => {
-        let totalAllocation = 0;
-        const finalAllocationType = account.accountPlan.finalAllocationType;
-
-        const initialAllocationEntry = account.entriesEntry?.find(entry => entry.type === "initial_allocation");
-        const initialAllocation = initialAllocationEntry ? initialAllocationEntry.allocation : 0;
-
-
-        // Se for uma conta do tipo L ou qualquer tipo L1 a L9, soma os filhos dessa conta
-        if (['L', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9'].includes(finalAllocationType)) {
-            totalAllocation += calculateChildrenAllocation(account); // Somar alocações das contas filhas
-        } else if (finalAllocationType === 'A') {
-            // Verificação para garantir que o array valuesAccounts tenha pelo menos 7 elementos
-            const allocationTypes = ['L', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
-            allocationTypes.forEach(type => {
-                const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-                if (account) {
-                    totalAllocation += parseFloat(calculateChildrenAllocationFinallAlocation(account).toFixed(2));
-                }
-            });
-        } else if (finalAllocationType === 'A1') {
-            // Verificação para garantir que o array valuesAccounts tenha pelo menos 2 elementos
-            // if (valuesAccounts.length >= 2) {
-            //     totalAllocation = valuesAccounts[0].total_allocation + valuesAccounts[1].total_allocation;
-            // } else {
-            //     totalAllocation = 0; // Ou outro valor adequado
-            // }
-            const allocationTypes = ['L', 'L1'];
-            allocationTypes.forEach(type => {
-                const account = accounts.find(acc => acc.accountPlan.finalAllocationType === type);
-                if (account) {
-                    totalAllocation += calculateChildrenAllocationFinallAlocation(account);
-                }
-            });
-        } else if (finalAllocationType === 'A2') {
-            // Verificação para garantir que o array valuesAccounts tenha pelo menos 1 elemento
-            if (valuesAccounts.length >= 1) {
-                totalAllocation = valuesAccounts[0].total_allocation;
-            } else {
-                totalAllocation = 0; // Ou outro valor adequado
-            }
-        } else if (finalAllocationType === 'A3') {
-            totalAllocation += calculateChildrenAllocationA2(account);
-        } else if (finalAllocationType === 'A4') {
-            // Verificação para garantir que o array valuesAccounts tenha pelo menos 4 elementos
-            if (valuesAccounts.length >= 4) {
-                totalAllocation = valuesAccounts[2].total_allocation + valuesAccounts[3].total_allocation;
-            } else {
-                totalAllocation = 0; // Ou outro valor adequado
-            }
-        } else if (finalAllocationType === 'A5') {
-            // Verificação para garantir que o array valuesAccounts tenha pelo menos 6 elementos
-            if (valuesAccounts.length >= 6) {
-                totalAllocation = valuesAccounts[5].total_allocation + valuesAccounts[6].total_allocation;
-            } else {
-                totalAllocation = 0; // Ou outro valor adequado
-            }
-        } else if (finalAllocationType === 'A7' || finalAllocationType === 'A8') {
-            // Verificação para garantir que o array valuesAccounts tenha pelo menos 8 elementos
-            if (valuesAccounts.length >= 8) {
-                totalAllocation =
-                    valuesAccounts[valuesAccounts.length - 1].total_allocation +
-                    valuesAccounts[valuesAccounts.length - 2].total_allocation +
-                    valuesAccounts[valuesAccounts.length - 3].total_allocation;
-
-            } else {
-                totalAllocation = 0; // Ou outro valor adequado
-            }
-        } else {
-            // Para outras contas que não são do tipo L ou A2, soma a alocação inicial
-            totalAllocation += initialAllocation || 0;
+    // Dotação Inicial (USD) sempre baseada na Tabela de Despesas (imutável após alterações)
+    const getLeafInitialUsd = (account) => {
+        if (!account) return 0;
+        const initialAllocationEntry = account.entriesEntry?.find(
+            (entry) => entry.type === "initial_allocation"
+        );
+        if (
+            initialAllocationEntry &&
+            initialAllocationEntry.allocation !== undefined &&
+            initialAllocationEntry.allocation !== null
+        ) {
+            return Number(initialAllocationEntry.allocation) || 0;
         }
+        return Number(account.initialAllocation ?? 0) || 0;
+    };
 
-        return totalAllocation;
+    const calculateFinalAllocationA = (account) => {
+        if (!account) return 0;
+        if (account.children && Array.isArray(account.children) && account.children.length > 0) {
+            return account.children.reduce(
+                (sum, child) => sum + calculateFinalAllocationA(child),
+                0
+            );
+        }
+        return getLeafInitialUsd(account);
     };
 
 
@@ -3396,15 +3347,16 @@ const BudgetExecutionReports = () => {
 
 
 
-    const totalCurrentContraValorData = valuesAccounts
-        .slice(0, 7)
-        .reduce((sum, account) => sum + (account.total_allocation || 0), 0);
+    // Totais da Dotação Inicial unificados com a Tabela de Despesas (imutáveis perante alterações)
+    const totalCurrentContraValorData = organizedAccounts
+        .filter((acc) => String(acc.accountPlan?.number || acc.accountPlanNumber || '').startsWith('1.'))
+        .reduce((sum, root) => sum + calculateFinalAllocationA(root), 0);
     const totalMzn = totalCurrentContraValorData * 2.5;
     const totalMznDinamic = totalCurrentContraValorData * 2.5;
 
-    const totalCurrentContraValorDataDespesas = valuesAccounts
-        .slice(7)
-        .reduce((sum, account) => sum + (account.total_allocation || 0), 0);
+    const totalCurrentContraValorDataDespesas = organizedAccounts
+        .filter((acc) => String(acc.accountPlan?.number || acc.accountPlanNumber || '').startsWith('2.'))
+        .reduce((sum, root) => sum + calculateFinalAllocationA(root), 0);
     const totalMznDespesas = totalCurrentContraValorDataDespesas * 2.5;
     const total = totalCurrentContraValorData + totalCurrentContraValorDataDespesas;
     const totalMznF = total * 2.5;
